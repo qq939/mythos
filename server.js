@@ -363,6 +363,32 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    // Debug: check versions directory
+    if (req.method === 'GET' && pathname === '/api/debug') {
+        try {
+            const dirExists = fs.existsSync(VERSIONS_DIR);
+            const files = dirExists ? fs.readdirSync(VERSIONS_DIR) : [];
+            const counterExists = fs.existsSync(COUNTER_FILE);
+            const counterVal = counterExists ? fs.readFileSync(COUNTER_FILE, 'utf8').trim() : 'N/A';
+            const backupExists = fs.existsSync(BACKUP_FILE);
+            const novelSize = fs.existsSync(NOVEL_FILE) ? fs.statSync(NOVEL_FILE).size : 0;
+            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(JSON.stringify({
+                versionsDir: VERSIONS_DIR,
+                dirExists,
+                files,
+                counterExists,
+                counterVal,
+                backupExists,
+                novelSize
+            }, null, 2));
+        } catch (e) {
+            res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(JSON.stringify({ error: e.message }));
+        }
+        return;
+    }
+
     // API: List versions
     if (req.method === 'GET' && pathname === '/api/versions') {
         try {
