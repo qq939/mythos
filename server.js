@@ -156,7 +156,7 @@ function continueNovel(userPrompt, res) {
             res.writeHead(504, { 'Content-Type': 'application/json; charset=utf-8' });
             res.end(JSON.stringify({ success: false, error: 'AI generation timed out' }));
         }
-    }, 300000);
+    }, 3000000);
 
     child.on('close', (code) => {
         clearTimeout(timeout);
