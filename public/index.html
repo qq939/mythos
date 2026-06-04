@@ -61,7 +61,7 @@ body {
     color: transparent;
 }
 
-/* Left side dots - vertically stacked */
+/* Left side dots */
 #dot-container {
     position: fixed;
     left: 16px;
@@ -250,28 +250,47 @@ textarea.modal-input::placeholder {
     font-style: italic;
 }
 
-/* Delete button - floating on text selection */
-#delete-btn {
+/* Selection action buttons (delete + comment) */
+#selection-actions {
     display: none;
     position: fixed;
     z-index: 250;
+    gap: 1px;
+    user-select: none;
+}
+
+#selection-actions.active {
+    display: flex;
+}
+
+.sel-btn {
     background: #1a1a1a;
     border: 1px solid #333;
     color: #666;
     padding: 5px 14px;
-    border-radius: 2px;
     font-family: 'Georgia', serif;
     font-size: 12px;
     letter-spacing: 1px;
     cursor: pointer;
     transition: all 0.2s;
-    user-select: none;
 }
 
-#delete-btn:hover {
-    background: #2a1a1a;
+.sel-btn:first-child {
+    border-radius: 2px 0 0 2px;
+}
+
+.sel-btn:last-child {
+    border-radius: 0 2px 2px 0;
+}
+
+.sel-btn:hover {
+    background: #222;
     border-color: #444;
     color: #999;
+}
+
+.sel-btn.delete-btn:hover {
+    background: #2a1a1a;
 }
 
 /* Delete confirm popup */
@@ -325,6 +344,195 @@ textarea.modal-input::placeholder {
 #delete-confirm .btn-yes:hover {
     background: #3a1a1a;
     color: #aaa;
+}
+
+/* Comment inline dot */
+.comment-dot {
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #333;
+    cursor: pointer;
+    vertical-align: middle;
+    margin-left: 2px;
+    margin-right: 1px;
+    transition: background 0.3s;
+}
+
+.comment-dot:hover {
+    background: #5a5a5a;
+}
+
+/* Comment create popup */
+#comment-create-popup {
+    display: none;
+    position: fixed;
+    z-index: 260;
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 4px;
+    padding: 16px 20px;
+    min-width: 260px;
+    max-width: 360px;
+}
+
+#comment-create-popup textarea {
+    width: 100%;
+    background: #0d0d0d;
+    border: 1px solid #222;
+    border-radius: 2px;
+    color: #aaa;
+    font-family: 'Georgia', serif;
+    font-size: 13px;
+    line-height: 1.7;
+    padding: 10px;
+    resize: vertical;
+    outline: none;
+    min-height: 80px;
+}
+
+#comment-create-popup textarea:focus {
+    border-color: #333;
+}
+
+#comment-create-popup .popup-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+#comment-create-popup .popup-actions button {
+    padding: 5px 16px;
+    border: none;
+    border-radius: 2px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: 1px;
+}
+
+#comment-create-popup .btn-popup-cancel {
+    background: transparent;
+    color: #444;
+    border: 1px solid #222;
+}
+
+#comment-create-popup .btn-popup-save {
+    background: #1a1a1a;
+    color: #888;
+    border: 1px solid #333;
+}
+
+#comment-create-popup .btn-popup-save:hover {
+    background: #222;
+    color: #aaa;
+}
+
+/* Comment view popup */
+#comment-view-popup {
+    display: none;
+    position: fixed;
+    z-index: 270;
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 4px;
+    padding: 16px 20px;
+    min-width: 260px;
+    max-width: 360px;
+}
+
+#comment-view-popup .comment-snippet {
+    color: #444;
+    font-size: 11px;
+    font-style: italic;
+    margin-bottom: 10px;
+    line-height: 1.5;
+    max-height: 48px;
+    overflow: hidden;
+    word-break: break-all;
+}
+
+#comment-view-popup .comment-text {
+    color: #888;
+    font-size: 13px;
+    line-height: 1.7;
+    margin-bottom: 12px;
+}
+
+#comment-view-popup textarea {
+    width: 100%;
+    background: #0d0d0d;
+    border: 1px solid #222;
+    border-radius: 2px;
+    color: #aaa;
+    font-family: 'Georgia', serif;
+    font-size: 13px;
+    line-height: 1.7;
+    padding: 10px;
+    resize: vertical;
+    outline: none;
+    min-height: 80px;
+}
+
+#comment-view-popup textarea:focus {
+    border-color: #333;
+}
+
+#comment-view-popup .popup-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+#comment-view-popup .popup-actions button {
+    padding: 5px 16px;
+    border: none;
+    border-radius: 2px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: 1px;
+}
+
+#comment-view-popup .btn-popup-edit {
+    background: transparent;
+    color: #666;
+    border: 1px solid #222;
+}
+
+#comment-view-popup .btn-popup-edit:hover {
+    color: #999;
+    border-color: #333;
+}
+
+#comment-view-popup .btn-popup-delete {
+    background: #1a1a1a;
+    color: #666;
+    border: 1px solid #333;
+}
+
+#comment-view-popup .btn-popup-delete:hover {
+    background: #2a1a1a;
+    color: #aaa;
+}
+
+#comment-view-popup .btn-popup-save {
+    background: #1a1a1a;
+    color: #888;
+    border: 1px solid #333;
+}
+
+#comment-view-popup .btn-popup-save:hover {
+    background: #222;
+    color: #aaa;
+}
+
+#comment-view-popup .btn-popup-cancel {
+    background: transparent;
+    color: #444;
+    border: 1px solid #222;
 }
 
 /* Loading indicator */
@@ -420,8 +628,11 @@ textarea.modal-input::placeholder {
 <div id="loading"><span>正在续写...</span></div>
 <div id="toast"></div>
 
-<!-- Delete button (floating, shown on text selection) -->
-<div id="delete-btn">删除</div>
+<!-- Selection action buttons (delete + comment) -->
+<div id="selection-actions">
+    <div class="sel-btn delete-btn" id="delete-btn">删除</div>
+    <div class="sel-btn" id="comment-btn">评论</div>
+</div>
 
 <!-- Delete confirm popup -->
 <div id="delete-confirm">
@@ -429,6 +640,30 @@ textarea.modal-input::placeholder {
     <div class="confirm-btns">
         <button class="btn-no" id="del-cancel">取消</button>
         <button class="btn-yes" id="del-confirm">删除</button>
+    </div>
+</div>
+
+<!-- Comment create popup -->
+<div id="comment-create-popup">
+    <textarea id="comment-create-input" placeholder="写下你的评论..."></textarea>
+    <div class="popup-actions">
+        <button class="btn-popup-cancel" id="comment-create-cancel">取消</button>
+        <button class="btn-popup-save" id="comment-create-save">保存</button>
+    </div>
+</div>
+
+<!-- Comment view/edit/delete popup -->
+<div id="comment-view-popup">
+    <div class="comment-snippet" id="comment-view-snippet"></div>
+    <div class="comment-text" id="comment-view-text"></div>
+    <textarea id="comment-view-edit" style="display:none"></textarea>
+    <div class="popup-actions" id="comment-view-actions">
+        <button class="btn-popup-edit" id="comment-view-edit-btn">编辑</button>
+        <button class="btn-popup-delete" id="comment-view-delete-btn">删除</button>
+    </div>
+    <div class="popup-actions" id="comment-edit-actions" style="display:none">
+        <button class="btn-popup-cancel" id="comment-edit-cancel">取消</button>
+        <button class="btn-popup-save" id="comment-edit-save">保存</button>
     </div>
 </div>
 
@@ -449,24 +684,125 @@ const btnCancel = document.getElementById('btn-cancel');
 const btnConfirm = document.getElementById('btn-confirm');
 const loading = document.getElementById('loading');
 const toast = document.getElementById('toast');
+
+// Selection actions
+const selectionActions = document.getElementById('selection-actions');
 const deleteBtn = document.getElementById('delete-btn');
+const commentBtn = document.getElementById('comment-btn');
 const deleteConfirm = document.getElementById('delete-confirm');
 const delCancel = document.getElementById('del-cancel');
 const delConfirmBtn = document.getElementById('del-confirm');
+
+// Comment popups
+const commentCreatePopup = document.getElementById('comment-create-popup');
+const commentCreateInput = document.getElementById('comment-create-input');
+const commentCreateCancel = document.getElementById('comment-create-cancel');
+const commentCreateSave = document.getElementById('comment-create-save');
+const commentViewPopup = document.getElementById('comment-view-popup');
+const commentViewSnippet = document.getElementById('comment-view-snippet');
+const commentViewText = document.getElementById('comment-view-text');
+const commentViewEdit = document.getElementById('comment-view-edit');
+const commentViewActions = document.getElementById('comment-view-actions');
+const commentEditActions = document.getElementById('comment-edit-actions');
+const commentViewEditBtn = document.getElementById('comment-view-edit-btn');
+const commentViewDeleteBtn = document.getElementById('comment-view-delete-btn');
+const commentEditCancel = document.getElementById('comment-edit-cancel');
+const commentEditSave = document.getElementById('comment-edit-save');
 
 let isGenerating = false;
 let previousLength = 0;
 let currentModalMode = null;
 let selectedText = '';
-let deleteConfirmPos = { x: 0, y: 0 };
+let allComments = [];
+let currentViewComment = null;
+
+// --- Utility ---
+
+function escapeHtml(text) {
+    return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('active');
+    setTimeout(() => toast.classList.remove('active'), 2000);
+}
+
+function scrollToBottom() {
+    novelContainer.scrollTop = novelContainer.scrollHeight;
+}
+
+// --- Novel rendering with comment dots ---
+
+function renderNovel(text) {
+    if (!allComments || allComments.length === 0) {
+        novelText.textContent = text;
+        return;
+    }
+
+    // Find positions of commented text in the novel
+    const markers = [];
+    for (const c of allComments) {
+        const idx = text.indexOf(c.text);
+        if (idx !== -1) {
+            markers.push({ id: c.id, start: idx, end: idx + c.text.length });
+        }
+    }
+
+    // Sort by position ascending, skip overlapping
+    markers.sort((a, b) => a.start - b.start);
+    const nonOverlapping = [];
+    let lastEnd = -1;
+    for (const m of markers) {
+        if (m.start >= lastEnd) {
+            nonOverlapping.push(m);
+            lastEnd = m.end;
+        }
+    }
+
+    // Build HTML with comment dots
+    let html = '';
+    let pos = 0;
+    for (const m of nonOverlapping) {
+        if (m.start > pos) {
+            html += escapeHtml(text.substring(pos, m.start));
+        }
+        html += escapeHtml(text.substring(m.start, m.end));
+        html += `<span class="comment-dot" data-comment-id="${m.id}"></span>`;
+        pos = m.end;
+    }
+    html += escapeHtml(text.substring(pos));
+
+    novelText.innerHTML = html;
+
+    // Add click handlers to dots
+    novelText.querySelectorAll('.comment-dot').forEach(dot => {
+        dot.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const commentId = dot.dataset.commentId;
+            const comment = allComments.find(c => c.id === commentId);
+            if (comment) showCommentView(dot, comment);
+        });
+    });
+}
+
+// --- API calls ---
 
 async function loadNovel() {
     try {
         const resp = await fetch('/api/novel');
         const text = await resp.text();
-        novelText.textContent = text;
+        renderNovel(text);
         return text.length;
     } catch (e) { return 0; }
+}
+
+async function loadComments() {
+    try {
+        const resp = await fetch('/api/comments');
+        const data = await resp.json();
+        allComments = data.comments || [];
+    } catch (e) { allComments = []; }
 }
 
 async function loadSystemPrompt() {
@@ -481,16 +817,6 @@ async function loadStylePrompt() {
         const resp = await fetch('/api/style-prompt');
         return await resp.text();
     } catch (e) { return ''; }
-}
-
-function scrollToBottom() {
-    novelContainer.scrollTop = novelContainer.scrollHeight;
-}
-
-function showToast(msg) {
-    toast.textContent = msg;
-    toast.classList.add('active');
-    setTimeout(() => toast.classList.remove('active'), 2000);
 }
 
 async function continueNovel(userPrompt) {
@@ -511,25 +837,6 @@ async function continueNovel(userPrompt) {
         if (data.success) {
             previousLength = novelText.textContent.length;
             await loadNovel();
-
-            const fullText = novelText.textContent;
-            if (fullText.length > previousLength) {
-                const oldPart = fullText.substring(0, previousLength);
-                const newPart = fullText.substring(previousLength);
-                novelText.innerHTML = '';
-                
-                const oldSpan = document.createTextNode(oldPart);
-                const newSpan = document.createElement('span');
-                newSpan.className = 'new-content';
-                newSpan.textContent = newPart;
-                
-                novelText.appendChild(oldSpan);
-                novelText.appendChild(newSpan);
-                
-                setTimeout(() => newSpan.classList.add('faded'), 100);
-                setTimeout(() => { novelText.textContent = fullText; }, 4000);
-            }
-
             scrollToBottom();
         } else {
             alert('续写失败: ' + (data.error || '未知错误'));
@@ -592,6 +899,66 @@ async function deleteText(text) {
     }
 }
 
+async function createComment(text, comment) {
+    try {
+        const resp = await fetch('/api/comment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text, comment })
+        });
+        const data = await resp.json();
+        if (data.success) {
+            await loadComments();
+            await loadNovel();
+            showToast('评论已保存');
+        } else {
+            alert('保存失败: ' + (data.error || '未知错误'));
+        }
+    } catch (e) {
+        alert('请求失败: ' + e.message);
+    }
+}
+
+async function updateComment(id, comment) {
+    try {
+        const resp = await fetch('/api/comment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, text: currentViewComment.text, comment })
+        });
+        const data = await resp.json();
+        if (data.success) {
+            await loadComments();
+            await loadNovel();
+            showToast('评论已更新');
+        } else {
+            alert('更新失败: ' + (data.error || '未知错误'));
+        }
+    } catch (e) {
+        alert('请求失败: ' + e.message);
+    }
+}
+
+async function deleteComment(id) {
+    try {
+        const resp = await fetch('/api/comment/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id })
+        });
+        const data = await resp.json();
+        if (data.success) {
+            await loadComments();
+            await loadNovel();
+            showToast('评论已删除');
+        } else {
+            alert('删除失败: ' + (data.error || '未知错误'));
+        }
+    } catch (e) {
+        alert('请求失败: ' + e.message);
+    }
+}
+
 async function loadVersions() {
     try {
         const resp = await fetch('/api/versions');
@@ -628,6 +995,8 @@ function formatDate(dateStr) {
     const d = new Date(dateStr);
     return `${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
 }
+
+// --- Modal ---
 
 function openModal(mode) {
     currentModalMode = mode;
@@ -687,23 +1056,24 @@ function closeModal() {
     currentModalMode = null;
 }
 
-// --- Text selection & delete feature ---
+// --- Selection actions (delete + comment) ---
 
-function hideDeleteUI() {
-    deleteBtn.style.display = 'none';
+function hideSelectionUI() {
+    selectionActions.classList.remove('active');
     deleteConfirm.style.display = 'none';
+    commentCreatePopup.style.display = 'none';
     selectedText = '';
 }
 
-function showDeleteButton(x, y) {
+function showSelectionActions(x, y) {
     let btnX = x;
     let btnY = y - 36;
-    if (btnX + 60 > window.innerWidth) btnX = window.innerWidth - 60;
+    if (btnX + 130 > window.innerWidth) btnX = window.innerWidth - 130;
     if (btnX < 10) btnX = 10;
     if (btnY < 10) btnY = y + 20;
-    deleteBtn.style.left = btnX + 'px';
-    deleteBtn.style.top = btnY + 'px';
-    deleteBtn.style.display = 'block';
+    selectionActions.style.left = btnX + 'px';
+    selectionActions.style.top = btnY + 'px';
+    selectionActions.classList.add('active');
 }
 
 novelContainer.addEventListener('mouseup', function(e) {
@@ -714,10 +1084,10 @@ novelContainer.addEventListener('mouseup', function(e) {
             selectedText = text;
             const range = sel.getRangeAt(0);
             const rect = range.getBoundingClientRect();
-            showDeleteButton(rect.right, rect.top);
+            showSelectionActions(rect.right, rect.top);
         } else {
-            if (!deleteBtn.contains(e.target) && !deleteConfirm.contains(e.target)) {
-                hideDeleteUI();
+            if (!selectionActions.contains(e.target) && !deleteConfirm.contains(e.target) && !commentCreatePopup.contains(e.target)) {
+                hideSelectionUI();
             }
         }
     }, 10);
@@ -731,29 +1101,27 @@ novelContainer.addEventListener('touchend', function(e) {
             selectedText = text;
             const range = sel.getRangeAt(0);
             const rect = range.getBoundingClientRect();
-            showDeleteButton(rect.right, rect.top);
+            showSelectionActions(rect.right, rect.top);
         }
     }, 300);
 });
 
+// Delete flow
 deleteBtn.addEventListener('click', function(e) {
     e.stopPropagation();
     if (!selectedText) return;
-    const btnRect = deleteBtn.getBoundingClientRect();
-    deleteConfirmPos.x = btnRect.left;
-    deleteConfirmPos.y = btnRect.top - 80;
-    if (deleteConfirmPos.y < 10) {
-        deleteConfirmPos.y = btnRect.bottom + 5;
-    }
-    deleteConfirm.style.left = deleteConfirmPos.x + 'px';
-    deleteConfirm.style.top = deleteConfirmPos.y + 'px';
+    const btnRect = selectionActions.getBoundingClientRect();
+    let popY = btnRect.top - 80;
+    if (popY < 10) popY = btnRect.bottom + 5;
+    deleteConfirm.style.left = btnRect.left + 'px';
+    deleteConfirm.style.top = popY + 'px';
     deleteConfirm.style.display = 'block';
-    deleteBtn.style.display = 'none';
+    selectionActions.classList.remove('active');
 });
 
 delCancel.addEventListener('click', function(e) {
     e.stopPropagation();
-    hideDeleteUI();
+    hideSelectionUI();
 });
 
 delConfirmBtn.addEventListener('click', async function(e) {
@@ -766,9 +1134,120 @@ delConfirmBtn.addEventListener('click', async function(e) {
     selectedText = '';
 });
 
+// Comment create flow
+commentBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    if (!selectedText) return;
+    const btnRect = selectionActions.getBoundingClientRect();
+    let popY = btnRect.top - 140;
+    if (popY < 10) popY = btnRect.bottom + 5;
+    commentCreatePopup.style.left = btnRect.left + 'px';
+    commentCreatePopup.style.top = popY + 'px';
+    commentCreateInput.value = '';
+    commentCreatePopup.style.display = 'block';
+    selectionActions.classList.remove('active');
+    setTimeout(() => commentCreateInput.focus(), 100);
+});
+
+commentCreateCancel.addEventListener('click', function(e) {
+    e.stopPropagation();
+    hideSelectionUI();
+});
+
+commentCreateSave.addEventListener('click', async function(e) {
+    e.stopPropagation();
+    const comment = commentCreateInput.value.trim();
+    if (!comment || !selectedText) return;
+    commentCreatePopup.style.display = 'none';
+    window.getSelection().removeAllRanges();
+    await createComment(selectedText, comment);
+    selectedText = '';
+});
+
+commentCreateInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        commentCreateSave.click();
+    }
+});
+
+// --- Comment view/edit/delete ---
+
+function showCommentView(dotEl, comment) {
+    currentViewComment = comment;
+    commentViewSnippet.textContent = comment.text.length > 80 ? comment.text.substring(0, 80) + '...' : comment.text;
+    commentViewText.textContent = comment.comment;
+    commentViewText.style.display = '';
+    commentViewEdit.style.display = 'none';
+    commentViewActions.style.display = '';
+    commentEditActions.style.display = 'none';
+
+    const rect = dotEl.getBoundingClientRect();
+    let popX = rect.left + 10;
+    let popY = rect.bottom + 5;
+    if (popX + 360 > window.innerWidth) popX = window.innerWidth - 370;
+    if (popX < 10) popX = 10;
+    if (popY + 200 > window.innerHeight) popY = rect.top - 200;
+    commentViewPopup.style.left = popX + 'px';
+    commentViewPopup.style.top = popY + 'px';
+    commentViewPopup.style.display = 'block';
+}
+
+function hideCommentView() {
+    commentViewPopup.style.display = 'none';
+    currentViewComment = null;
+}
+
+commentViewEditBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    if (!currentViewComment) return;
+    commentViewText.style.display = 'none';
+    commentViewEdit.value = currentViewComment.comment;
+    commentViewEdit.style.display = '';
+    commentViewActions.style.display = 'none';
+    commentEditActions.style.display = '';
+    setTimeout(() => commentViewEdit.focus(), 100);
+});
+
+commentViewDeleteBtn.addEventListener('click', async function(e) {
+    e.stopPropagation();
+    if (!currentViewComment) return;
+    hideCommentView();
+    await deleteComment(currentViewComment.id);
+});
+
+commentEditCancel.addEventListener('click', function(e) {
+    e.stopPropagation();
+    commentViewText.style.display = '';
+    commentViewEdit.style.display = 'none';
+    commentViewActions.style.display = '';
+    commentEditActions.style.display = 'none';
+});
+
+commentEditSave.addEventListener('click', async function(e) {
+    e.stopPropagation();
+    if (!currentViewComment) return;
+    const newComment = commentViewEdit.value.trim();
+    if (!newComment) return;
+    hideCommentView();
+    await updateComment(currentViewComment.id, newComment);
+});
+
+commentViewEdit.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        commentEditSave.click();
+    }
+});
+
+// --- Global click handlers ---
+
 document.addEventListener('mousedown', function(e) {
-    if (!deleteBtn.contains(e.target) && !deleteConfirm.contains(e.target)) {
-        hideDeleteUI();
+    if (!selectionActions.contains(e.target) && !deleteConfirm.contains(e.target) && !commentCreatePopup.contains(e.target)) {
+        hideSelectionUI();
+    }
+    if (!commentViewPopup.contains(e.target) && !e.target.classList.contains('comment-dot')) {
+        hideCommentView();
     }
 });
 
@@ -806,7 +1285,8 @@ promptInput.addEventListener('keydown', (e) => {
 
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 
-loadNovel().then(() => scrollToBottom());
+// --- Init ---
+loadComments().then(() => loadNovel()).then(() => scrollToBottom());
 </script>
 </body>
 </html>

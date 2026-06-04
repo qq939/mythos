@@ -10,6 +10,7 @@ const NOVEL_FILE = path.join(PROJECT_DIR, 'mythos.txt');
 const BACKUP_FILE = path.join(PROJECT_DIR, 'mythos_backup.txt');
 const PROMPT_FILE = path.join(PROJECT_DIR, 'system_prompt.txt');
 const STYLE_FILE = path.join(PROJECT_DIR, 'style_prompt.txt');
+const COMMENTS_FILE = path.join(PROJECT_DIR, 'comments.json');
 const VERSIONS_DIR = path.join(PROJECT_DIR, 'versions');
 const COUNTER_FILE = path.join(VERSIONS_DIR, '.counter');
 const LOG_FILE = path.join(PROJECT_DIR, 'logs', 'novel.log');
@@ -39,6 +40,7 @@ fs.mkdirSync(VERSIONS_DIR, { recursive: true });
 if (!fs.existsSync(NOVEL_FILE)) fs.writeFileSync(NOVEL_FILE, '', 'utf8');
 if (!fs.existsSync(PROMPT_FILE)) fs.writeFileSync(PROMPT_FILE, DEFAULT_SYSTEM_PROMPT, 'utf8');
 if (!fs.existsSync(STYLE_FILE)) fs.writeFileSync(STYLE_FILE, '', 'utf8');
+if (!fs.existsSync(COMMENTS_FILE)) fs.writeFileSync(COMMENTS_FILE, '[]', 'utf8');
 
 // Auto-create v1 if novel has content but no versions exist yet
 const existingContent = fs.readFileSync(NOVEL_FILE, 'utf8').trim();
@@ -59,6 +61,15 @@ function getSystemPrompt() {
 function getStylePrompt() {
     try { return fs.readFileSync(STYLE_FILE, 'utf8').trim(); }
     catch (e) { return ''; }
+}
+
+function getComments() {
+    try { return JSON.parse(fs.readFileSync(COMMENTS_FILE, 'utf8')); }
+    catch (e) { return []; }
+}
+
+function saveComments(comments) {
+    fs.writeFileSync(COMMENTS_FILE, JSON.stringify(comments, null, 2), 'utf8');
 }
 
 // Version management
@@ -128,6 +139,12 @@ function continueNovel(userPrompt, res) {
 
     if (stylePrompt) {
         fullPrompt += `\n\n---\n\n风格参考：请仔细模仿以下文章的写作风格、语言节奏、用词习惯和文字质感来续写：\n\n${stylePrompt}`;
+    }
+
+    const comments = getComments();
+    if (comments.length > 0) {
+        const commentLines = comments.map(c => `• "${c.text}" → ${c.comment}`).join('\n');
+        fullPrompt += `\n\n---\n\n读者评论提示（请在续写时参考这些意见）：\n${commentLines}`;
     }
 
     fullPrompt += '\n\n请直接续写约500字，不要重复已有内容，不要加任何说明性文字，只输出小说正文。';
@@ -464,6 +481,95 @@ const server = http.createServer((req, res) => {
         let decoded = q;
         try { if (q.length >= 50 && !q.includes(' ')) decoded = Buffer.from(q, 'base64').toString('utf8'); } catch (e) {}
         continueNovel(decoded, res);
+        return;
+    }
+
+    // API: Get comments
+    if (req.method === 'GET' && pathname === '/api/comments') {
+        try {
+            res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-cache' });
+            res.end(JSON.stringify({ success: true, comments: getComments() }));
+        } catch (e) {
+            res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(JSON.stringify({ success: false, error: e.message }));
+        }
+        return;
+    }
+
+    // API: Create or update comment
+    if (req.method === 'POST' && pathname === '/api/comment') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', () => {
+            try {
+                const { id, text, comment } = JSON.parse(body);
+                if (!text || !text.trim() || !comment || !comment.trim()) {
+                    res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+                    res.end(JSON.stringify({ success: false, error: 'Missing text or comment' }));
+                    return;
+                }
+                const comments = getComments();
+                if (id) {
+                    const idx = comments.findIndex(c => c.id === id);
+                    if (idx !== -1) {
+                        comments[idx].comment = comment.trim();
+                        comments[idx].updatedAt = new Date().toISOString();
+                        saveComments(comments);
+                        log(`Comment updated: ${id}`);
+                        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+                        res.end(JSON.stringify({ success: true, comment: comments[idx] }));
+                        return;
+                    }
+                }
+                const newComment = {
+                    id: `c_${Date.now()}`,
+                    text: text.trim(),
+                    comment: comment.trim(),
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                };
+                comments.push(newComment);
+                saveComments(comments);
+                log(`Comment created: ${newComment.id} on "${text.substring(0, 40)}..."`);
+                res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+                res.end(JSON.stringify({ success: true, comment: newComment }));
+            } catch (e) {
+                res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+                res.end(JSON.stringify({ success: false, error: 'Invalid request' }));
+            }
+        });
+        return;
+    }
+
+    // API: Delete comment
+    if (req.method === 'POST' && pathname === '/api/comment/delete') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', () => {
+            try {
+                const { id } = JSON.parse(body);
+                if (!id) {
+                    res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+                    res.end(JSON.stringify({ success: false, error: 'Missing id' }));
+                    return;
+                }
+                let comments = getComments();
+                const idx = comments.findIndex(c => c.id === id);
+                if (idx === -1) {
+                    res.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' });
+                    res.end(JSON.stringify({ success: false, error: 'Comment not found' }));
+                    return;
+                }
+                comments.splice(idx, 1);
+                saveComments(comments);
+                log(`Comment deleted: ${id}`);
+                res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+                res.end(JSON.stringify({ success: true }));
+            } catch (e) {
+                res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+                res.end(JSON.stringify({ success: false, error: 'Invalid request' }));
+            }
+        });
         return;
     }
 
