@@ -57,9 +57,8 @@ body {
 }
 
 #novel-text:empty::before {
-    content: '点击左侧圆点，输入提示词开始写作...';
-    color: #333;
-    font-style: italic;
+    content: '';
+    color: transparent;
 }
 
 /* Left side dots - vertically stacked */
@@ -398,10 +397,10 @@ textarea.modal-input::placeholder {
 </div>
 
 <div id="dot-container">
-    <div class="trigger-dot" id="dot-continue" title="续写"></div>
-    <div class="trigger-dot" id="dot-system" title="系统提示词"></div>
-    <div class="trigger-dot" id="dot-style" title="风格提示词"></div>
-    <div class="trigger-dot" id="dot-versions" title="版本历史"></div>
+    <div class="trigger-dot" id="dot-continue"></div>
+    <div class="trigger-dot" id="dot-system"></div>
+    <div class="trigger-dot" id="dot-style"></div>
+    <div class="trigger-dot" id="dot-versions"></div>
 </div>
 
 <div id="modal-overlay">
