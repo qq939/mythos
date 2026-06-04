@@ -160,14 +160,24 @@ function continueNovel(userPrompt, res) {
 
     child.on('close', (code) => {
         clearTimeout(timeout);
-        if (responded) return;
-        responded = true;
         const continuation = stdout.trim();
+        
         if (code === 0 && continuation) {
+            // Always save version + append content, even if HTTP response already sent
             saveVersion();
             fs.appendFileSync(NOVEL_FILE, '\n\n' + continuation, 'utf8');
             backupNovel();
-            log(`Novel continued, added ${continuation.length} chars`);
+            log(`Novel continued, added ${continuation.length} chars (responded=${responded})`);
+        }
+
+        if (responded) {
+            // HTTP response already sent (timeout), just log
+            log(`Claude finished after timeout, content saved: ${continuation.length} chars`);
+            return;
+        }
+        responded = true;
+
+        if (code === 0 && continuation) {
             res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
             res.end(JSON.stringify({ success: true, continuation }));
         } else {
