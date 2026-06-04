@@ -1,0 +1,9 @@
+{
+  "name": "mythos-novel",
+  "version": "1.0.0",
+  "description": "Mythos AI novel continuation website",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

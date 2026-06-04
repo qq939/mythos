@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mythos</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background: #0a0a0b;
+    color: #c8c8c8;
+    font-family: 'Georgia', 'Noto Serif SC', serif;
+    line-height: 2;
+    overflow: hidden;
+    height: 100vh;
+}
+
+#novel-container {
+    height: 100vh;
+    overflow-y: auto;
+    padding: 60px 80px 120px 80px;
+    scroll-behavior: smooth;
+}
+
+#novel-container::-webkit-scrollbar {
+    width: 3px;
+}
+
+#novel-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#novel-container::-webkit-scrollbar-thumb {
+    background: #222;
+    border-radius: 2px;
+}
+
+#novel-text {
+    max-width: 720px;
+    margin: 0 auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    font-size: 16.5px;
+    letter-spacing: 0.3px;
+}
+
+#novel-text:empty::before {
+    content: '点击左侧圆点，输入提示词开始写作...';
+    color: #333;
+    font-style: italic;
+}
+
+/* Left dot trigger */
+#trigger-dot {
+    position: fixed;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #1a1a1a;
+    cursor: pointer;
+    z-index: 100;
+    transition: background 0.3s;
+}
+
+#trigger-dot:hover {
+    background: #3a3a3a;
+}
+
+/* Modal overlay */
+#modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    justify-content: center;
+    align-items: center;
+}
+
+#modal-overlay.active {
+    display: flex;
+}
+
+#modal {
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 4px;
+    padding: 32px;
+    width: 480px;
+    max-width: 90vw;
+}
+
+#modal h3 {
+    color: #666;
+    font-size: 13px;
+    font-weight: normal;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+}
+
+#prompt-input {
+    width: 100%;
+    height: 100px;
+    background: #0d0d0d;
+    border: 1px solid #222;
+    border-radius: 2px;
+    color: #aaa;
+    font-family: 'Georgia', serif;
+    font-size: 14px;
+    line-height: 1.8;
+    padding: 12px;
+    resize: vertical;
+    outline: none;
+}
+
+#prompt-input:focus {
+    border-color: #333;
+}
+
+#prompt-input::placeholder {
+    color: #333;
+}
+
+#modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.btn {
+    padding: 8px 24px;
+    border: none;
+    border-radius: 2px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: 1px;
+}
+
+.btn-cancel {
+    background: transparent;
+    color: #444;
+    border: 1px solid #222;
+}
+
+.btn-cancel:hover {
+    color: #666;
+    border-color: #333;
+}
+
+.btn-confirm {
+    background: #1a1a1a;
+    color: #888;
+}
+
+.btn-confirm:hover {
+    background: #222;
+    color: #aaa;
+}
+
+.btn-confirm:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* Loading indicator */
+#loading {
+    display: none;
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #333;
+    font-size: 12px;
+    letter-spacing: 3px;
+    z-index: 150;
+}
+
+#loading.active {
+    display: block;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.8; }
+}
+
+#loading span {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* New content highlight */
+.new-content {
+    color: #ddd;
+    transition: color 3s ease;
+}
+
+.new-content.faded {
+    color: #c8c8c8;
+}
+</style>
+</head>
+<body>
+
+<div id="novel-container">
+    <div id="novel-text"></div>
+</div>
+
+<div id="trigger-dot" title="续写"></div>
+
+<div id="modal-overlay">
+    <div id="modal">
+        <h3>续写方向</h3>
+        <textarea id="prompt-input" placeholder="输入你想让故事发展的方向..."></textarea>
+        <div id="modal-buttons">
+            <button class="btn btn-cancel" id="btn-cancel">取消</button>
+            <button class="btn btn-confirm" id="btn-confirm">确认续写</button>
+        </div>
+    </div>
+</div>
+
+<div id="loading"><span>正在续写...</span></div>
+
+<script>
+const novelContainer = document.getElementById('novel-container');
+const novelText = document.getElementById('novel-text');
+const triggerDot = document.getElementById('trigger-dot');
+const modalOverlay = document.getElementById('modal-overlay');
+const promptInput = document.getElementById('prompt-input');
+const btnCancel = document.getElementById('btn-cancel');
+const btnConfirm = document.getElementById('btn-confirm');
+const loading = document.getElementById('loading');
+
+let isGenerating = false;
+let previousLength = 0;
+
+// Load novel text
+async function loadNovel() {
+    try {
+        const resp = await fetch('/api/novel');
+        const text = await resp.text();
+        novelText.textContent = text;
+        return text.length;
+    } catch (e) {
+        return 0;
+    }
+}
+
+// Scroll to bottom
+function scrollToBottom() {
+    novelContainer.scrollTop = novelContainer.scrollHeight;
+}
+
+// Continue novel
+async function continueNovel(userPrompt) {
+    if (isGenerating) return;
+    isGenerating = true;
+    btnConfirm.disabled = true;
+    loading.classList.add('active');
+
+    try {
+        const resp = await fetch('/api/continue', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userPrompt })
+        });
+
+        const data = await resp.json();
+
+        if (data.success) {
+            previousLength = novelText.textContent.length;
+            await loadNovel();
+
+            // Highlight new content briefly
+            const fullText = novelText.textContent;
+            if (fullText.length > previousLength) {
+                const oldPart = fullText.substring(0, previousLength);
+                const newPart = fullText.substring(previousLength);
+                novelText.innerHTML = '';
+                
+                const oldSpan = document.createTextNode(oldPart);
+                const newSpan = document.createElement('span');
+                newSpan.className = 'new-content';
+                newSpan.textContent = newPart;
+                
+                novelText.appendChild(oldSpan);
+                novelText.appendChild(newSpan);
+                
+                setTimeout(() => newSpan.classList.add('faded'), 100);
+                setTimeout(() => {
+                    novelText.textContent = fullText;
+                }, 4000);
+            }
+
+            scrollToBottom();
+        } else {
+            alert('续写失败: ' + (data.error || '未知错误'));
+        }
+    } catch (e) {
+        alert('请求失败: ' + e.message);
+    } finally {
+        isGenerating = false;
+        btnConfirm.disabled = false;
+        loading.classList.remove('active');
+    }
+}
+
+// Event listeners
+triggerDot.addEventListener('click', () => {
+    if (isGenerating) return;
+    modalOverlay.classList.add('active');
+    promptInput.value = '';
+    setTimeout(() => promptInput.focus(), 100);
+});
+
+btnCancel.addEventListener('click', () => {
+    modalOverlay.classList.remove('active');
+});
+
+modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) {
+        modalOverlay.classList.remove('active');
+    }
+});
+
+btnConfirm.addEventListener('click', () => {
+    const prompt = promptInput.value.trim();
+    if (!prompt) return;
+    modalOverlay.classList.remove('active');
+    continueNovel(prompt);
+});
+
+promptInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        btnConfirm.click();
+    }
+});
+
+// Initial load
+loadNovel().then(() => scrollToBottom());
+
+// Keyboard shortcut
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        modalOverlay.classList.remove('active');
+    }
+});
+</script>
+</body>
+</html>
