@@ -40,6 +40,17 @@ if (!fs.existsSync(NOVEL_FILE)) fs.writeFileSync(NOVEL_FILE, '', 'utf8');
 if (!fs.existsSync(PROMPT_FILE)) fs.writeFileSync(PROMPT_FILE, DEFAULT_SYSTEM_PROMPT, 'utf8');
 if (!fs.existsSync(STYLE_FILE)) fs.writeFileSync(STYLE_FILE, '', 'utf8');
 
+// Auto-create v1 if novel has content but no versions exist yet
+const existingContent = fs.readFileSync(NOVEL_FILE, 'utf8').trim();
+const existingVersions = listVersions();
+if (existingContent && existingVersions.length === 0) {
+    const counter = 1;
+    fs.writeFileSync(path.join(VERSIONS_DIR, 'mythos_v1.txt'), existingContent, 'utf8');
+    setVersionCounter(counter);
+    backupNovel();
+    console.log(`Auto-created v1 from existing novel content (${existingContent.length} chars)`);
+}
+
 function getSystemPrompt() {
     try { return fs.readFileSync(PROMPT_FILE, 'utf8').trim(); }
     catch (e) { return DEFAULT_SYSTEM_PROMPT; }
