@@ -109,6 +109,8 @@ body {
     padding: 32px;
     width: 520px;
     max-width: 90vw;
+    max-height: 80vh;
+    overflow-y: auto;
 }
 
 #modal h3 {
@@ -195,6 +197,137 @@ textarea.modal-input::placeholder {
     cursor: not-allowed;
 }
 
+/* Version list */
+#version-list {
+    display: none;
+    width: 100%;
+}
+
+#version-list.active {
+    display: block;
+}
+
+.version-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid #181818;
+    transition: background 0.2s;
+}
+
+.version-item:hover {
+    background: #181818;
+}
+
+.version-item:last-child {
+    border-bottom: none;
+}
+
+.version-id {
+    color: #666;
+    font-size: 13px;
+    letter-spacing: 1px;
+    min-width: 80px;
+}
+
+.version-id.backup {
+    color: #555;
+    font-style: italic;
+}
+
+.version-meta {
+    color: #333;
+    font-size: 11px;
+    margin-left: auto;
+    letter-spacing: 0.5px;
+}
+
+#version-empty {
+    color: #333;
+    font-size: 12px;
+    text-align: center;
+    padding: 30px 0;
+    font-style: italic;
+}
+
+/* Delete button - floating on text selection */
+#delete-btn {
+    display: none;
+    position: fixed;
+    z-index: 250;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    color: #666;
+    padding: 5px 14px;
+    border-radius: 2px;
+    font-family: 'Georgia', serif;
+    font-size: 12px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+#delete-btn:hover {
+    background: #2a1a1a;
+    border-color: #444;
+    color: #999;
+}
+
+/* Delete confirm popup */
+#delete-confirm {
+    display: none;
+    position: fixed;
+    z-index: 260;
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 4px;
+    padding: 16px 20px;
+    min-width: 200px;
+}
+
+#delete-confirm p {
+    color: #666;
+    font-size: 12px;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    line-height: 1.6;
+}
+
+#delete-confirm .confirm-btns {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+#delete-confirm .confirm-btns button {
+    padding: 5px 16px;
+    border: none;
+    border-radius: 2px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: 1px;
+}
+
+#delete-confirm .btn-no {
+    background: transparent;
+    color: #444;
+    border: 1px solid #222;
+}
+
+#delete-confirm .btn-yes {
+    background: #2a1a1a;
+    color: #888;
+    border: 1px solid #333;
+}
+
+#delete-confirm .btn-yes:hover {
+    background: #3a1a1a;
+    color: #aaa;
+}
+
 /* Loading indicator */
 #loading {
     display: none;
@@ -268,6 +401,7 @@ textarea.modal-input::placeholder {
     <div class="trigger-dot" id="dot-continue" title="续写"></div>
     <div class="trigger-dot" id="dot-system" title="系统提示词"></div>
     <div class="trigger-dot" id="dot-style" title="风格提示词"></div>
+    <div class="trigger-dot" id="dot-versions" title="版本历史"></div>
 </div>
 
 <div id="modal-overlay">
@@ -276,9 +410,10 @@ textarea.modal-input::placeholder {
         <textarea id="prompt-input" class="modal-input" placeholder="输入你想让故事发展的方向..."></textarea>
         <textarea id="system-prompt-input" class="modal-input" style="display:none" placeholder="系统提示词..."></textarea>
         <textarea id="style-prompt-input" class="modal-input" style="display:none" placeholder="粘贴一段你喜欢的文章，AI将模仿其风格续写..."></textarea>
+        <div id="version-list"></div>
         <div id="modal-buttons">
             <button class="btn btn-cancel" id="btn-cancel">取消</button>
-            <button class="btn btn-confirm" id="btn-confirm">确认</button>
+            <button class="btn btn-confirm" id="btn-confirm" style="display:none">确认</button>
         </div>
     </div>
 </div>
@@ -286,25 +421,45 @@ textarea.modal-input::placeholder {
 <div id="loading"><span>正在续写...</span></div>
 <div id="toast"></div>
 
+<!-- Delete button (floating, shown on text selection) -->
+<div id="delete-btn">删除</div>
+
+<!-- Delete confirm popup -->
+<div id="delete-confirm">
+    <p>确定删除选中的文字吗？</p>
+    <div class="confirm-btns">
+        <button class="btn-no" id="del-cancel">取消</button>
+        <button class="btn-yes" id="del-confirm">删除</button>
+    </div>
+</div>
+
 <script>
 const novelContainer = document.getElementById('novel-container');
 const novelText = document.getElementById('novel-text');
 const dotContinue = document.getElementById('dot-continue');
 const dotSystem = document.getElementById('dot-system');
 const dotStyle = document.getElementById('dot-style');
+const dotVersions = document.getElementById('dot-versions');
 const modalOverlay = document.getElementById('modal-overlay');
 const modalTitle = document.getElementById('modal-title');
 const promptInput = document.getElementById('prompt-input');
 const systemPromptInput = document.getElementById('system-prompt-input');
 const stylePromptInput = document.getElementById('style-prompt-input');
+const versionList = document.getElementById('version-list');
 const btnCancel = document.getElementById('btn-cancel');
 const btnConfirm = document.getElementById('btn-confirm');
 const loading = document.getElementById('loading');
 const toast = document.getElementById('toast');
+const deleteBtn = document.getElementById('delete-btn');
+const deleteConfirm = document.getElementById('delete-confirm');
+const delCancel = document.getElementById('del-cancel');
+const delConfirmBtn = document.getElementById('del-confirm');
 
 let isGenerating = false;
 let previousLength = 0;
 let currentModalMode = null;
+let selectedText = '';
+let deleteConfirmPos = { x: 0, y: 0 };
 
 async function loadNovel() {
     try {
@@ -419,20 +574,81 @@ async function saveStylePrompt(prompt) {
     finally { btnConfirm.disabled = false; }
 }
 
+async function deleteText(text) {
+    try {
+        const resp = await fetch('/api/delete-text', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+        });
+        const data = await resp.json();
+        if (data.success) {
+            await loadNovel();
+            showToast('已删除');
+        } else {
+            alert('删除失败: ' + (data.error || '未知错误'));
+        }
+    } catch (e) {
+        alert('请求失败: ' + e.message);
+    }
+}
+
+async function loadVersions() {
+    try {
+        const resp = await fetch('/api/versions');
+        const data = await resp.json();
+        return data.versions || [];
+    } catch (e) { return []; }
+}
+
+async function rollbackTo(version) {
+    if (!confirm(`回退到 ${version}？当前内容将被替换。`)) return;
+    try {
+        const resp = await fetch('/api/rollback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ version })
+        });
+        const data = await resp.json();
+        if (data.success) {
+            await loadNovel();
+            closeModal();
+            showToast(`已回退到 ${version}`);
+        } else {
+            alert('回退失败: ' + (data.error || '未知错误'));
+        }
+    } catch (e) { alert('请求失败: ' + e.message); }
+}
+
+function formatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    return (bytes / 1024).toFixed(1) + ' KB';
+}
+
+function formatDate(dateStr) {
+    const d = new Date(dateStr);
+    return `${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
 function openModal(mode) {
     currentModalMode = mode;
     promptInput.style.display = 'none';
     systemPromptInput.style.display = 'none';
     stylePromptInput.style.display = 'none';
+    versionList.classList.remove('active');
+    versionList.innerHTML = '';
+    btnConfirm.style.display = 'none';
 
     if (mode === 'continue') {
         modalTitle.textContent = '续写方向';
         promptInput.style.display = '';
+        btnConfirm.style.display = '';
         promptInput.value = '';
         setTimeout(() => promptInput.focus(), 100);
     } else if (mode === 'system-prompt') {
         modalTitle.textContent = '系统提示词';
         systemPromptInput.style.display = '';
+        btnConfirm.style.display = '';
         loadSystemPrompt().then(text => {
             systemPromptInput.value = text;
             setTimeout(() => systemPromptInput.focus(), 100);
@@ -440,9 +656,28 @@ function openModal(mode) {
     } else if (mode === 'style-prompt') {
         modalTitle.textContent = '风格提示词';
         stylePromptInput.style.display = '';
+        btnConfirm.style.display = '';
         loadStylePrompt().then(text => {
             stylePromptInput.value = text;
             setTimeout(() => stylePromptInput.focus(), 100);
+        });
+    } else if (mode === 'versions') {
+        modalTitle.textContent = '版本历史';
+        versionList.classList.add('active');
+        loadVersions().then(versions => {
+            if (versions.length === 0) {
+                versionList.innerHTML = '<div id="version-empty">暂无版本记录</div>';
+                return;
+            }
+            versionList.innerHTML = versions.map(v => `
+                <div class="version-item" data-version="${v.id}">
+                    <span class="version-id ${v.id === 'vBACKUP' ? 'backup' : ''}">${v.id}</span>
+                    <span class="version-meta">${formatSize(v.size)} · ${formatDate(v.mtime)}</span>
+                </div>
+            `).join('');
+            versionList.querySelectorAll('.version-item').forEach(item => {
+                item.addEventListener('click', () => rollbackTo(item.dataset.version));
+            });
         });
     }
     modalOverlay.classList.add('active');
@@ -453,9 +688,97 @@ function closeModal() {
     currentModalMode = null;
 }
 
+// --- Text selection & delete feature ---
+
+function hideDeleteUI() {
+    deleteBtn.style.display = 'none';
+    deleteConfirm.style.display = 'none';
+    selectedText = '';
+}
+
+function showDeleteButton(x, y) {
+    let btnX = x;
+    let btnY = y - 36;
+    if (btnX + 60 > window.innerWidth) btnX = window.innerWidth - 60;
+    if (btnX < 10) btnX = 10;
+    if (btnY < 10) btnY = y + 20;
+    deleteBtn.style.left = btnX + 'px';
+    deleteBtn.style.top = btnY + 'px';
+    deleteBtn.style.display = 'block';
+}
+
+novelContainer.addEventListener('mouseup', function(e) {
+    setTimeout(() => {
+        const sel = window.getSelection();
+        const text = sel.toString().trim();
+        if (text && text.length > 0 && novelText.contains(sel.anchorNode)) {
+            selectedText = text;
+            const range = sel.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+            showDeleteButton(rect.right, rect.top);
+        } else {
+            if (!deleteBtn.contains(e.target) && !deleteConfirm.contains(e.target)) {
+                hideDeleteUI();
+            }
+        }
+    }, 10);
+});
+
+novelContainer.addEventListener('touchend', function(e) {
+    setTimeout(() => {
+        const sel = window.getSelection();
+        const text = sel.toString().trim();
+        if (text && text.length > 0 && novelText.contains(sel.anchorNode)) {
+            selectedText = text;
+            const range = sel.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+            showDeleteButton(rect.right, rect.top);
+        }
+    }, 300);
+});
+
+deleteBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    if (!selectedText) return;
+    const btnRect = deleteBtn.getBoundingClientRect();
+    deleteConfirmPos.x = btnRect.left;
+    deleteConfirmPos.y = btnRect.top - 80;
+    if (deleteConfirmPos.y < 10) {
+        deleteConfirmPos.y = btnRect.bottom + 5;
+    }
+    deleteConfirm.style.left = deleteConfirmPos.x + 'px';
+    deleteConfirm.style.top = deleteConfirmPos.y + 'px';
+    deleteConfirm.style.display = 'block';
+    deleteBtn.style.display = 'none';
+});
+
+delCancel.addEventListener('click', function(e) {
+    e.stopPropagation();
+    hideDeleteUI();
+});
+
+delConfirmBtn.addEventListener('click', async function(e) {
+    e.stopPropagation();
+    if (!selectedText) return;
+    const textToDelete = selectedText;
+    deleteConfirm.style.display = 'none';
+    window.getSelection().removeAllRanges();
+    await deleteText(textToDelete);
+    selectedText = '';
+});
+
+document.addEventListener('mousedown', function(e) {
+    if (!deleteBtn.contains(e.target) && !deleteConfirm.contains(e.target)) {
+        hideDeleteUI();
+    }
+});
+
+// --- Dot and modal event listeners ---
+
 dotContinue.addEventListener('click', () => { if (!isGenerating) openModal('continue'); });
 dotSystem.addEventListener('click', () => { openModal('system-prompt'); });
 dotStyle.addEventListener('click', () => { openModal('style-prompt'); });
+dotVersions.addEventListener('click', () => { openModal('versions'); });
 
 btnCancel.addEventListener('click', closeModal);
 modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });

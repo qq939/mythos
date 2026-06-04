@@ -1,0 +1,7 @@
+node_modules/
+logs/
+mythos.txt
+mythos_backup.txt
+system_prompt.txt
+style_prompt.txt
+versions/
