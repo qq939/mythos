@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mythos</title>
+<title>MYTHOS</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -36,6 +36,17 @@ body {
     border-radius: 2px;
 }
 
+#novel-title {
+    max-width: 720px;
+    margin: 0 auto 48px auto;
+    text-align: center;
+    color: #2a2a2a;
+    font-size: 28px;
+    letter-spacing: 18px;
+    font-weight: normal;
+    user-select: none;
+}
+
 #novel-text {
     max-width: 720px;
     margin: 0 auto;
@@ -51,41 +62,28 @@ body {
     font-style: italic;
 }
 
-/* Left dot trigger - continue writing */
-#trigger-dot-left {
+/* Left side dots - vertically stacked */
+#dot-container {
     position: fixed;
     left: 16px;
     top: 50%;
     transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    z-index: 100;
+}
+
+.trigger-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
     background: #1a1a1a;
     cursor: pointer;
-    z-index: 100;
     transition: background 0.3s;
 }
 
-#trigger-dot-left:hover {
-    background: #3a3a3a;
-}
-
-/* Right dot trigger - edit system prompt */
-#trigger-dot-right {
-    position: fixed;
-    right: 16px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #1a1a1a;
-    cursor: pointer;
-    z-index: 100;
-    transition: background 0.3s;
-}
-
-#trigger-dot-right:hover {
+.trigger-dot:hover {
     background: #3a3a3a;
 }
 
@@ -148,7 +146,7 @@ textarea.modal-input::placeholder {
     height: 100px;
 }
 
-#system-prompt-input {
+#system-prompt-input, #style-prompt-input {
     height: 300px;
     font-size: 12.5px;
     line-height: 1.6;
@@ -262,17 +260,22 @@ textarea.modal-input::placeholder {
 <body>
 
 <div id="novel-container">
+    <h1 id="novel-title">MYTHOS</h1>
     <div id="novel-text"></div>
 </div>
 
-<div id="trigger-dot-left" title="续写"></div>
-<div id="trigger-dot-right" title="系统提示词"></div>
+<div id="dot-container">
+    <div class="trigger-dot" id="dot-continue" title="续写"></div>
+    <div class="trigger-dot" id="dot-system" title="系统提示词"></div>
+    <div class="trigger-dot" id="dot-style" title="风格提示词"></div>
+</div>
 
 <div id="modal-overlay">
     <div id="modal">
         <h3 id="modal-title">续写方向</h3>
         <textarea id="prompt-input" class="modal-input" placeholder="输入你想让故事发展的方向..."></textarea>
         <textarea id="system-prompt-input" class="modal-input" style="display:none" placeholder="系统提示词..."></textarea>
+        <textarea id="style-prompt-input" class="modal-input" style="display:none" placeholder="粘贴一段你喜欢的文章，AI将模仿其风格续写..."></textarea>
         <div id="modal-buttons">
             <button class="btn btn-cancel" id="btn-cancel">取消</button>
             <button class="btn btn-confirm" id="btn-confirm">确认</button>
@@ -286,12 +289,14 @@ textarea.modal-input::placeholder {
 <script>
 const novelContainer = document.getElementById('novel-container');
 const novelText = document.getElementById('novel-text');
-const triggerDotLeft = document.getElementById('trigger-dot-left');
-const triggerDotRight = document.getElementById('trigger-dot-right');
+const dotContinue = document.getElementById('dot-continue');
+const dotSystem = document.getElementById('dot-system');
+const dotStyle = document.getElementById('dot-style');
 const modalOverlay = document.getElementById('modal-overlay');
 const modalTitle = document.getElementById('modal-title');
 const promptInput = document.getElementById('prompt-input');
 const systemPromptInput = document.getElementById('system-prompt-input');
+const stylePromptInput = document.getElementById('style-prompt-input');
 const btnCancel = document.getElementById('btn-cancel');
 const btnConfirm = document.getElementById('btn-confirm');
 const loading = document.getElementById('loading');
@@ -299,43 +304,41 @@ const toast = document.getElementById('toast');
 
 let isGenerating = false;
 let previousLength = 0;
-let currentModalMode = null; // 'continue' or 'system-prompt'
+let currentModalMode = null;
 
-// Load novel text
 async function loadNovel() {
     try {
         const resp = await fetch('/api/novel');
         const text = await resp.text();
         novelText.textContent = text;
         return text.length;
-    } catch (e) {
-        return 0;
-    }
+    } catch (e) { return 0; }
 }
 
-// Load system prompt
 async function loadSystemPrompt() {
     try {
         const resp = await fetch('/api/system-prompt');
         return await resp.text();
-    } catch (e) {
-        return '';
-    }
+    } catch (e) { return ''; }
 }
 
-// Scroll to bottom
+async function loadStylePrompt() {
+    try {
+        const resp = await fetch('/api/style-prompt');
+        return await resp.text();
+    } catch (e) { return ''; }
+}
+
 function scrollToBottom() {
     novelContainer.scrollTop = novelContainer.scrollHeight;
 }
 
-// Show toast
 function showToast(msg) {
     toast.textContent = msg;
     toast.classList.add('active');
     setTimeout(() => toast.classList.remove('active'), 2000);
 }
 
-// Continue novel
 async function continueNovel(userPrompt) {
     if (isGenerating) return;
     isGenerating = true;
@@ -370,9 +373,7 @@ async function continueNovel(userPrompt) {
                 novelText.appendChild(newSpan);
                 
                 setTimeout(() => newSpan.classList.add('faded'), 100);
-                setTimeout(() => {
-                    novelText.textContent = fullText;
-                }, 4000);
+                setTimeout(() => { novelText.textContent = fullText; }, 4000);
             }
 
             scrollToBottom();
@@ -388,7 +389,6 @@ async function continueNovel(userPrompt) {
     }
 }
 
-// Save system prompt
 async function saveSystemPrompt(prompt) {
     btnConfirm.disabled = true;
     try {
@@ -398,61 +398,67 @@ async function saveSystemPrompt(prompt) {
             body: JSON.stringify({ prompt })
         });
         const data = await resp.json();
-        if (data.success) {
-            showToast('系统提示词已保存');
-        } else {
-            alert('保存失败: ' + (data.error || '未知错误'));
-        }
-    } catch (e) {
-        alert('请求失败: ' + e.message);
-    } finally {
-        btnConfirm.disabled = false;
-    }
+        if (data.success) showToast('系统提示词已保存');
+        else alert('保存失败: ' + (data.error || '未知错误'));
+    } catch (e) { alert('请求失败: ' + e.message); }
+    finally { btnConfirm.disabled = false; }
 }
 
-// Open modal
+async function saveStylePrompt(prompt) {
+    btnConfirm.disabled = true;
+    try {
+        const resp = await fetch('/api/style-prompt', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt })
+        });
+        const data = await resp.json();
+        if (data.success) showToast('风格提示词已保存');
+        else alert('保存失败: ' + (data.error || '未知错误'));
+    } catch (e) { alert('请求失败: ' + e.message); }
+    finally { btnConfirm.disabled = false; }
+}
+
 function openModal(mode) {
     currentModalMode = mode;
+    promptInput.style.display = 'none';
+    systemPromptInput.style.display = 'none';
+    stylePromptInput.style.display = 'none';
+
     if (mode === 'continue') {
         modalTitle.textContent = '续写方向';
         promptInput.style.display = '';
-        systemPromptInput.style.display = 'none';
         promptInput.value = '';
         setTimeout(() => promptInput.focus(), 100);
     } else if (mode === 'system-prompt') {
         modalTitle.textContent = '系统提示词';
-        promptInput.style.display = 'none';
         systemPromptInput.style.display = '';
         loadSystemPrompt().then(text => {
             systemPromptInput.value = text;
             setTimeout(() => systemPromptInput.focus(), 100);
         });
+    } else if (mode === 'style-prompt') {
+        modalTitle.textContent = '风格提示词';
+        stylePromptInput.style.display = '';
+        loadStylePrompt().then(text => {
+            stylePromptInput.value = text;
+            setTimeout(() => stylePromptInput.focus(), 100);
+        });
     }
     modalOverlay.classList.add('active');
 }
 
-// Close modal
 function closeModal() {
     modalOverlay.classList.remove('active');
     currentModalMode = null;
 }
 
-// Event listeners - left dot: continue
-triggerDotLeft.addEventListener('click', () => {
-    if (isGenerating) return;
-    openModal('continue');
-});
-
-// Event listeners - right dot: system prompt
-triggerDotRight.addEventListener('click', () => {
-    openModal('system-prompt');
-});
+dotContinue.addEventListener('click', () => { if (!isGenerating) openModal('continue'); });
+dotSystem.addEventListener('click', () => { openModal('system-prompt'); });
+dotStyle.addEventListener('click', () => { openModal('style-prompt'); });
 
 btnCancel.addEventListener('click', closeModal);
-
-modalOverlay.addEventListener('click', (e) => {
-    if (e.target === modalOverlay) closeModal();
-});
+modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
 
 btnConfirm.addEventListener('click', () => {
     if (currentModalMode === 'continue') {
@@ -465,23 +471,20 @@ btnConfirm.addEventListener('click', () => {
         if (!prompt) return;
         closeModal();
         saveSystemPrompt(prompt);
+    } else if (currentModalMode === 'style-prompt') {
+        const prompt = stylePromptInput.value.trim();
+        closeModal();
+        saveStylePrompt(prompt);
     }
 });
 
 promptInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        btnConfirm.click();
-    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); btnConfirm.click(); }
 });
 
-// Initial load
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
 loadNovel().then(() => scrollToBottom());
-
-// Keyboard shortcut
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeModal();
-});
 </script>
 </body>
 </html>
