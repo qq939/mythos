@@ -51,8 +51,8 @@ body {
     font-style: italic;
 }
 
-/* Left dot trigger */
-#trigger-dot {
+/* Left dot trigger - continue writing */
+#trigger-dot-left {
     position: fixed;
     left: 16px;
     top: 50%;
@@ -66,7 +66,26 @@ body {
     transition: background 0.3s;
 }
 
-#trigger-dot:hover {
+#trigger-dot-left:hover {
+    background: #3a3a3a;
+}
+
+/* Right dot trigger - edit system prompt */
+#trigger-dot-right {
+    position: fixed;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #1a1a1a;
+    cursor: pointer;
+    z-index: 100;
+    transition: background 0.3s;
+}
+
+#trigger-dot-right:hover {
     background: #3a3a3a;
 }
 
@@ -90,7 +109,7 @@ body {
     border: 1px solid #222;
     border-radius: 4px;
     padding: 32px;
-    width: 480px;
+    width: 520px;
     max-width: 90vw;
 }
 
@@ -103,9 +122,8 @@ body {
     margin-bottom: 16px;
 }
 
-#prompt-input {
+textarea.modal-input {
     width: 100%;
-    height: 100px;
     background: #0d0d0d;
     border: 1px solid #222;
     border-radius: 2px;
@@ -118,12 +136,22 @@ body {
     outline: none;
 }
 
-#prompt-input:focus {
+textarea.modal-input:focus {
     border-color: #333;
 }
 
-#prompt-input::placeholder {
+textarea.modal-input::placeholder {
     color: #333;
+}
+
+#prompt-input {
+    height: 100px;
+}
+
+#system-prompt-input {
+    height: 300px;
+    font-size: 12.5px;
+    line-height: 1.6;
 }
 
 #modal-buttons {
@@ -204,6 +232,31 @@ body {
 .new-content.faded {
     color: #c8c8c8;
 }
+
+/* Toast notification */
+#toast {
+    display: none;
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #555;
+    font-size: 12px;
+    letter-spacing: 2px;
+    z-index: 300;
+}
+
+#toast.active {
+    display: block;
+    animation: toastFade 2s ease forwards;
+}
+
+@keyframes toastFade {
+    0% { opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { opacity: 0; }
+}
 </style>
 </head>
 <body>
@@ -212,33 +265,41 @@ body {
     <div id="novel-text"></div>
 </div>
 
-<div id="trigger-dot" title="续写"></div>
+<div id="trigger-dot-left" title="续写"></div>
+<div id="trigger-dot-right" title="系统提示词"></div>
 
 <div id="modal-overlay">
     <div id="modal">
-        <h3>续写方向</h3>
-        <textarea id="prompt-input" placeholder="输入你想让故事发展的方向..."></textarea>
+        <h3 id="modal-title">续写方向</h3>
+        <textarea id="prompt-input" class="modal-input" placeholder="输入你想让故事发展的方向..."></textarea>
+        <textarea id="system-prompt-input" class="modal-input" style="display:none" placeholder="系统提示词..."></textarea>
         <div id="modal-buttons">
             <button class="btn btn-cancel" id="btn-cancel">取消</button>
-            <button class="btn btn-confirm" id="btn-confirm">确认续写</button>
+            <button class="btn btn-confirm" id="btn-confirm">确认</button>
         </div>
     </div>
 </div>
 
 <div id="loading"><span>正在续写...</span></div>
+<div id="toast"></div>
 
 <script>
 const novelContainer = document.getElementById('novel-container');
 const novelText = document.getElementById('novel-text');
-const triggerDot = document.getElementById('trigger-dot');
+const triggerDotLeft = document.getElementById('trigger-dot-left');
+const triggerDotRight = document.getElementById('trigger-dot-right');
 const modalOverlay = document.getElementById('modal-overlay');
+const modalTitle = document.getElementById('modal-title');
 const promptInput = document.getElementById('prompt-input');
+const systemPromptInput = document.getElementById('system-prompt-input');
 const btnCancel = document.getElementById('btn-cancel');
 const btnConfirm = document.getElementById('btn-confirm');
 const loading = document.getElementById('loading');
+const toast = document.getElementById('toast');
 
 let isGenerating = false;
 let previousLength = 0;
+let currentModalMode = null; // 'continue' or 'system-prompt'
 
 // Load novel text
 async function loadNovel() {
@@ -252,9 +313,26 @@ async function loadNovel() {
     }
 }
 
+// Load system prompt
+async function loadSystemPrompt() {
+    try {
+        const resp = await fetch('/api/system-prompt');
+        return await resp.text();
+    } catch (e) {
+        return '';
+    }
+}
+
 // Scroll to bottom
 function scrollToBottom() {
     novelContainer.scrollTop = novelContainer.scrollHeight;
+}
+
+// Show toast
+function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('active');
+    setTimeout(() => toast.classList.remove('active'), 2000);
 }
 
 // Continue novel
@@ -277,7 +355,6 @@ async function continueNovel(userPrompt) {
             previousLength = novelText.textContent.length;
             await loadNovel();
 
-            // Highlight new content briefly
             const fullText = novelText.textContent;
             if (fullText.length > previousLength) {
                 const oldPart = fullText.substring(0, previousLength);
@@ -311,29 +388,84 @@ async function continueNovel(userPrompt) {
     }
 }
 
-// Event listeners
-triggerDot.addEventListener('click', () => {
-    if (isGenerating) return;
+// Save system prompt
+async function saveSystemPrompt(prompt) {
+    btnConfirm.disabled = true;
+    try {
+        const resp = await fetch('/api/system-prompt', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt })
+        });
+        const data = await resp.json();
+        if (data.success) {
+            showToast('系统提示词已保存');
+        } else {
+            alert('保存失败: ' + (data.error || '未知错误'));
+        }
+    } catch (e) {
+        alert('请求失败: ' + e.message);
+    } finally {
+        btnConfirm.disabled = false;
+    }
+}
+
+// Open modal
+function openModal(mode) {
+    currentModalMode = mode;
+    if (mode === 'continue') {
+        modalTitle.textContent = '续写方向';
+        promptInput.style.display = '';
+        systemPromptInput.style.display = 'none';
+        promptInput.value = '';
+        setTimeout(() => promptInput.focus(), 100);
+    } else if (mode === 'system-prompt') {
+        modalTitle.textContent = '系统提示词';
+        promptInput.style.display = 'none';
+        systemPromptInput.style.display = '';
+        loadSystemPrompt().then(text => {
+            systemPromptInput.value = text;
+            setTimeout(() => systemPromptInput.focus(), 100);
+        });
+    }
     modalOverlay.classList.add('active');
-    promptInput.value = '';
-    setTimeout(() => promptInput.focus(), 100);
+}
+
+// Close modal
+function closeModal() {
+    modalOverlay.classList.remove('active');
+    currentModalMode = null;
+}
+
+// Event listeners - left dot: continue
+triggerDotLeft.addEventListener('click', () => {
+    if (isGenerating) return;
+    openModal('continue');
 });
 
-btnCancel.addEventListener('click', () => {
-    modalOverlay.classList.remove('active');
+// Event listeners - right dot: system prompt
+triggerDotRight.addEventListener('click', () => {
+    openModal('system-prompt');
 });
+
+btnCancel.addEventListener('click', closeModal);
 
 modalOverlay.addEventListener('click', (e) => {
-    if (e.target === modalOverlay) {
-        modalOverlay.classList.remove('active');
-    }
+    if (e.target === modalOverlay) closeModal();
 });
 
 btnConfirm.addEventListener('click', () => {
-    const prompt = promptInput.value.trim();
-    if (!prompt) return;
-    modalOverlay.classList.remove('active');
-    continueNovel(prompt);
+    if (currentModalMode === 'continue') {
+        const prompt = promptInput.value.trim();
+        if (!prompt) return;
+        closeModal();
+        continueNovel(prompt);
+    } else if (currentModalMode === 'system-prompt') {
+        const prompt = systemPromptInput.value.trim();
+        if (!prompt) return;
+        closeModal();
+        saveSystemPrompt(prompt);
+    }
 });
 
 promptInput.addEventListener('keydown', (e) => {
@@ -348,9 +480,7 @@ loadNovel().then(() => scrollToBottom());
 
 // Keyboard shortcut
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        modalOverlay.classList.remove('active');
-    }
+    if (e.key === 'Escape') closeModal();
 });
 </script>
 </body>
