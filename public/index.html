@@ -80,6 +80,16 @@ body {
     background: #1a1a1a;
     cursor: pointer;
     transition: background 0.3s;
+    position: relative;
+}
+.trigger-dot::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 36px;
+    height: 36px;
 }
 
 .trigger-dot:hover {
@@ -358,6 +368,16 @@ textarea.modal-input::placeholder {
     margin-left: 2px;
     margin-right: 1px;
     transition: background 0.3s;
+    position: relative;
+}
+.comment-dot::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 28px;
+    height: 28px;
 }
 
 .comment-dot:hover {
