@@ -294,6 +294,32 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    // API: Update full novel text
+    if (req.method === 'PUT' && pathname === '/api/novel') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', () => {
+            try {
+                const { text } = JSON.parse(body);
+                if (typeof text !== 'string') {
+                    res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+                    res.end(JSON.stringify({ success: false, error: 'Missing text' }));
+                    return;
+                }
+                saveVersion();
+                fs.writeFileSync(NOVEL_FILE, text, 'utf8');
+                backupNovel();
+                log(`Novel text updated, new length: ${text.length}`);
+                res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+                res.end(JSON.stringify({ success: true }));
+            } catch (e) {
+                res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
+                res.end(JSON.stringify({ success: false, error: 'Invalid request' }));
+            }
+        });
+        return;
+    }
+
     // API: Delete text from novel (by text content matching)
     if (req.method === 'POST' && pathname === '/api/delete-text') {
         let body = '';
