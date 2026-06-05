@@ -23,27 +23,28 @@ body {
     scroll-behavior: smooth;
 }
 
-#novel-container::-webkit-scrollbar {
-    width: 3px;
-}
-
-#novel-container::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-#novel-container::-webkit-scrollbar-thumb {
-    background: #222;
-    border-radius: 2px;
-}
+#novel-container::-webkit-scrollbar { width: 3px; }
+#novel-container::-webkit-scrollbar-track { background: transparent; }
+#novel-container::-webkit-scrollbar-thumb { background: #222; border-radius: 2px; }
 
 #novel-title {
     max-width: 720px;
-    margin: 0 auto 48px auto;
+    margin: 0 auto 8px auto;
     text-align: center;
     color: #2a2a2a;
     font-size: 28px;
     letter-spacing: 18px;
     font-weight: normal;
+    user-select: none;
+}
+
+#chapter-label {
+    max-width: 720px;
+    margin: 0 auto 48px auto;
+    text-align: center;
+    color: #1a1a1a;
+    font-size: 11px;
+    letter-spacing: 3px;
     user-select: none;
 }
 
@@ -56,10 +57,7 @@ body {
     letter-spacing: 0.3px;
 }
 
-#novel-text:empty::before {
-    content: '';
-    color: transparent;
-}
+#novel-text:empty::before { content: ''; color: transparent; }
 
 /* Left side dots */
 #dot-container {
@@ -91,10 +89,29 @@ body {
     width: 36px;
     height: 36px;
 }
+.trigger-dot:hover { background: #3a3a3a; }
 
-.trigger-dot:hover {
-    background: #3a3a3a;
+/* Chapter navigation */
+#chapter-nav {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    z-index: 100;
+    color: #1a1a1a;
+    font-size: 12px;
+    letter-spacing: 2px;
+    user-select: none;
 }
+#chap-prev, #chap-next {
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: color 0.3s;
+}
+#chap-prev:hover, #chap-next:hover { color: #3a3a3a; }
 
 /* Modal overlay */
 #modal-overlay {
@@ -106,10 +123,7 @@ body {
     justify-content: center;
     align-items: center;
 }
-
-#modal-overlay.active {
-    display: flex;
-}
+#modal-overlay.active { display: flex; }
 
 #modal {
     background: #111;
@@ -121,7 +135,6 @@ body {
     max-height: 80vh;
     overflow-y: auto;
 }
-
 #modal h3 {
     color: #666;
     font-size: 13px;
@@ -144,24 +157,11 @@ textarea.modal-input {
     resize: vertical;
     outline: none;
 }
+textarea.modal-input:focus { border-color: #333; }
+textarea.modal-input::placeholder { color: #333; }
 
-textarea.modal-input:focus {
-    border-color: #333;
-}
-
-textarea.modal-input::placeholder {
-    color: #333;
-}
-
-#prompt-input {
-    height: 100px;
-}
-
-#system-prompt-input, #style-prompt-input {
-    height: 300px;
-    font-size: 12.5px;
-    line-height: 1.6;
-}
+#prompt-input { height: 100px; }
+#system-prompt-input, #style-prompt-input { height: 300px; font-size: 12.5px; line-height: 1.6; }
 
 #modal-buttons {
     display: flex;
@@ -179,42 +179,17 @@ textarea.modal-input::placeholder {
     font-family: inherit;
     letter-spacing: 1px;
 }
-
-.btn-cancel {
-    background: transparent;
-    color: #444;
-    border: 1px solid #222;
-}
-
-.btn-cancel:hover {
-    color: #666;
-    border-color: #333;
-}
-
-.btn-confirm {
-    background: #1a1a1a;
-    color: #888;
-}
-
-.btn-confirm:hover {
-    background: #222;
-    color: #aaa;
-}
-
-.btn-confirm:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-}
+.btn-cancel { background: transparent; color: #444; border: 1px solid #222; }
+.btn-cancel:hover { color: #666; border-color: #333; }
+.btn-confirm { background: #1a1a1a; color: #888; }
+.btn-confirm:hover { background: #222; color: #aaa; }
+.btn-confirm:disabled { opacity: 0.3; cursor: not-allowed; }
+.btn-secondary { background: transparent; color: #555; border: 1px solid #222; }
+.btn-secondary:hover { color: #777; border-color: #333; }
 
 /* Version list */
-#version-list {
-    display: none;
-    width: 100%;
-}
-
-#version-list.active {
-    display: block;
-}
+#version-list { display: none; width: 100%; }
+#version-list.active { display: block; }
 
 .version-item {
     display: flex;
@@ -224,43 +199,13 @@ textarea.modal-input::placeholder {
     border-bottom: 1px solid #181818;
     transition: background 0.2s;
 }
+.version-item:hover { background: #181818; }
+.version-item:last-child { border-bottom: none; }
+.version-id { color: #666; font-size: 13px; letter-spacing: 1px; min-width: 80px; }
+.version-meta { color: #333; font-size: 11px; margin-left: auto; letter-spacing: 0.5px; }
+#version-empty { color: #333; font-size: 12px; text-align: center; padding: 30px 0; font-style: italic; }
 
-.version-item:hover {
-    background: #181818;
-}
-
-.version-item:last-child {
-    border-bottom: none;
-}
-
-.version-id {
-    color: #666;
-    font-size: 13px;
-    letter-spacing: 1px;
-    min-width: 80px;
-}
-
-.version-id.backup {
-    color: #555;
-    font-style: italic;
-}
-
-.version-meta {
-    color: #333;
-    font-size: 11px;
-    margin-left: auto;
-    letter-spacing: 0.5px;
-}
-
-#version-empty {
-    color: #333;
-    font-size: 12px;
-    text-align: center;
-    padding: 30px 0;
-    font-style: italic;
-}
-
-/* Selection action buttons (delete + comment) */
+/* Selection action buttons */
 #selection-actions {
     display: none;
     position: fixed;
@@ -268,10 +213,7 @@ textarea.modal-input::placeholder {
     gap: 1px;
     user-select: none;
 }
-
-#selection-actions.active {
-    display: flex;
-}
+#selection-actions.active { display: flex; }
 
 .sel-btn {
     background: #1a1a1a;
@@ -284,24 +226,10 @@ textarea.modal-input::placeholder {
     cursor: pointer;
     transition: all 0.2s;
 }
-
-.sel-btn:first-child {
-    border-radius: 2px 0 0 2px;
-}
-
-.sel-btn:last-child {
-    border-radius: 0 2px 2px 0;
-}
-
-.sel-btn:hover {
-    background: #222;
-    border-color: #444;
-    color: #999;
-}
-
-.sel-btn.delete-btn:hover {
-    background: #2a1a1a;
-}
+.sel-btn:first-child { border-radius: 2px 0 0 2px; }
+.sel-btn:last-child { border-radius: 0 2px 2px 0; }
+.sel-btn:hover { background: #222; border-color: #444; color: #999; }
+.sel-btn.delete-btn:hover { background: #2a1a1a; }
 
 /* Delete confirm popup */
 #delete-confirm {
@@ -314,47 +242,12 @@ textarea.modal-input::placeholder {
     padding: 16px 20px;
     min-width: 200px;
 }
-
-#delete-confirm p {
-    color: #666;
-    font-size: 12px;
-    letter-spacing: 1px;
-    margin-bottom: 12px;
-    line-height: 1.6;
-}
-
-#delete-confirm .confirm-btns {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-}
-
-#delete-confirm .confirm-btns button {
-    padding: 5px 16px;
-    border: none;
-    border-radius: 2px;
-    font-size: 12px;
-    cursor: pointer;
-    font-family: inherit;
-    letter-spacing: 1px;
-}
-
-#delete-confirm .btn-no {
-    background: transparent;
-    color: #444;
-    border: 1px solid #222;
-}
-
-#delete-confirm .btn-yes {
-    background: #2a1a1a;
-    color: #888;
-    border: 1px solid #333;
-}
-
-#delete-confirm .btn-yes:hover {
-    background: #3a1a1a;
-    color: #aaa;
-}
+#delete-confirm p { color: #666; font-size: 12px; letter-spacing: 1px; margin-bottom: 12px; line-height: 1.6; }
+#delete-confirm .confirm-btns { display: flex; justify-content: flex-end; gap: 10px; }
+#delete-confirm .confirm-btns button { padding: 5px 16px; border: none; border-radius: 2px; font-size: 12px; cursor: pointer; font-family: inherit; letter-spacing: 1px; }
+#delete-confirm .btn-no { background: transparent; color: #444; border: 1px solid #222; }
+#delete-confirm .btn-yes { background: #2a1a1a; color: #888; border: 1px solid #333; }
+#delete-confirm .btn-yes:hover { background: #3a1a1a; color: #aaa; }
 
 /* Comment inline dot */
 .comment-dot {
@@ -379,10 +272,7 @@ textarea.modal-input::placeholder {
     width: 28px;
     height: 28px;
 }
-
-.comment-dot:hover {
-    background: #5a5a5a;
-}
+.comment-dot:hover { background: #5a5a5a; }
 
 /* Comment create popup */
 #comment-create-popup {
@@ -396,7 +286,6 @@ textarea.modal-input::placeholder {
     min-width: 260px;
     max-width: 360px;
 }
-
 #comment-create-popup textarea {
     width: 100%;
     background: #0d0d0d;
@@ -411,44 +300,12 @@ textarea.modal-input::placeholder {
     outline: none;
     min-height: 80px;
 }
-
-#comment-create-popup textarea:focus {
-    border-color: #333;
-}
-
-#comment-create-popup .popup-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 12px;
-}
-
-#comment-create-popup .popup-actions button {
-    padding: 5px 16px;
-    border: none;
-    border-radius: 2px;
-    font-size: 12px;
-    cursor: pointer;
-    font-family: inherit;
-    letter-spacing: 1px;
-}
-
-#comment-create-popup .btn-popup-cancel {
-    background: transparent;
-    color: #444;
-    border: 1px solid #222;
-}
-
-#comment-create-popup .btn-popup-save {
-    background: #1a1a1a;
-    color: #888;
-    border: 1px solid #333;
-}
-
-#comment-create-popup .btn-popup-save:hover {
-    background: #222;
-    color: #aaa;
-}
+#comment-create-popup textarea:focus { border-color: #333; }
+#comment-create-popup .popup-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 12px; }
+#comment-create-popup .popup-actions button { padding: 5px 16px; border: none; border-radius: 2px; font-size: 12px; cursor: pointer; font-family: inherit; letter-spacing: 1px; }
+#comment-create-popup .btn-popup-cancel { background: transparent; color: #444; border: 1px solid #222; }
+#comment-create-popup .btn-popup-save { background: #1a1a1a; color: #888; border: 1px solid #333; }
+#comment-create-popup .btn-popup-save:hover { background: #222; color: #aaa; }
 
 /* Comment view popup */
 #comment-view-popup {
@@ -462,98 +319,19 @@ textarea.modal-input::placeholder {
     min-width: 260px;
     max-width: 360px;
 }
-
-#comment-view-popup .comment-snippet {
-    color: #444;
-    font-size: 11px;
-    font-style: italic;
-    margin-bottom: 10px;
-    line-height: 1.5;
-    max-height: 48px;
-    overflow: hidden;
-    word-break: break-all;
-}
-
-#comment-view-popup .comment-text {
-    color: #888;
-    font-size: 13px;
-    line-height: 1.7;
-    margin-bottom: 12px;
-}
-
-#comment-view-popup textarea {
-    width: 100%;
-    background: #0d0d0d;
-    border: 1px solid #222;
-    border-radius: 2px;
-    color: #aaa;
-    font-family: 'Georgia', serif;
-    font-size: 13px;
-    line-height: 1.7;
-    padding: 10px;
-    resize: vertical;
-    outline: none;
-    min-height: 80px;
-}
-
-#comment-view-popup textarea:focus {
-    border-color: #333;
-}
-
-#comment-view-popup .popup-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-}
-
-#comment-view-popup .popup-actions button {
-    padding: 5px 16px;
-    border: none;
-    border-radius: 2px;
-    font-size: 12px;
-    cursor: pointer;
-    font-family: inherit;
-    letter-spacing: 1px;
-}
-
-#comment-view-popup .btn-popup-edit {
-    background: transparent;
-    color: #666;
-    border: 1px solid #222;
-}
-
-#comment-view-popup .btn-popup-edit:hover {
-    color: #999;
-    border-color: #333;
-}
-
-#comment-view-popup .btn-popup-delete {
-    background: #1a1a1a;
-    color: #666;
-    border: 1px solid #333;
-}
-
-#comment-view-popup .btn-popup-delete:hover {
-    background: #2a1a1a;
-    color: #aaa;
-}
-
-#comment-view-popup .btn-popup-save {
-    background: #1a1a1a;
-    color: #888;
-    border: 1px solid #333;
-}
-
-#comment-view-popup .btn-popup-save:hover {
-    background: #222;
-    color: #aaa;
-}
-
-#comment-view-popup .btn-popup-cancel {
-    background: transparent;
-    color: #444;
-    border: 1px solid #222;
-}
+#comment-view-popup .comment-snippet { color: #444; font-size: 11px; font-style: italic; margin-bottom: 10px; line-height: 1.5; max-height: 48px; overflow: hidden; word-break: break-all; }
+#comment-view-popup .comment-text { color: #888; font-size: 13px; line-height: 1.7; margin-bottom: 12px; }
+#comment-view-popup textarea { width: 100%; background: #0d0d0d; border: 1px solid #222; border-radius: 2px; color: #aaa; font-family: 'Georgia', serif; font-size: 13px; line-height: 1.7; padding: 10px; resize: vertical; outline: none; min-height: 80px; }
+#comment-view-popup textarea:focus { border-color: #333; }
+#comment-view-popup .popup-actions { display: flex; justify-content: flex-end; gap: 10px; }
+#comment-view-popup .popup-actions button { padding: 5px 16px; border: none; border-radius: 2px; font-size: 12px; cursor: pointer; font-family: inherit; letter-spacing: 1px; }
+#comment-view-popup .btn-popup-edit { background: transparent; color: #666; border: 1px solid #222; }
+#comment-view-popup .btn-popup-edit:hover { color: #999; border-color: #333; }
+#comment-view-popup .btn-popup-delete { background: #1a1a1a; color: #666; border: 1px solid #333; }
+#comment-view-popup .btn-popup-delete:hover { background: #2a1a1a; color: #aaa; }
+#comment-view-popup .btn-popup-save { background: #1a1a1a; color: #888; border: 1px solid #333; }
+#comment-view-popup .btn-popup-save:hover { background: #222; color: #aaa; }
+#comment-view-popup .btn-popup-cancel { background: transparent; color: #444; border: 1px solid #222; }
 
 /* Loading indicator */
 #loading {
@@ -567,31 +345,11 @@ textarea.modal-input::placeholder {
     letter-spacing: 3px;
     z-index: 150;
 }
+#loading.active { display: block; }
+@keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } }
+#loading span { animation: pulse 2s ease-in-out infinite; }
 
-#loading.active {
-    display: block;
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 0.3; }
-    50% { opacity: 0.8; }
-}
-
-#loading span {
-    animation: pulse 2s ease-in-out infinite;
-}
-
-/* New content highlight */
-.new-content {
-    color: #ddd;
-    transition: color 3s ease;
-}
-
-.new-content.faded {
-    color: #c8c8c8;
-}
-
-/* Toast notification */
+/* Toast */
 #toast {
     display: none;
     position: fixed;
@@ -603,17 +361,13 @@ textarea.modal-input::placeholder {
     letter-spacing: 2px;
     z-index: 300;
 }
+#toast.active { display: block; animation: toastFade 2s ease forwards; }
+@keyframes toastFade { 0% { opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
 
-#toast.active {
-    display: block;
-    animation: toastFade 2s ease forwards;
-}
-
-@keyframes toastFade {
-    0% { opacity: 0; }
-    20% { opacity: 1; }
-    80% { opacity: 1; }
-    100% { opacity: 0; }
+/* Mobile */
+@media (max-width: 768px) {
+    #novel-container { padding: 40px 24px 100px 24px; }
+    #novel-title { font-size: 22px; letter-spacing: 12px; }
 }
 </style>
 </head>
@@ -621,6 +375,7 @@ textarea.modal-input::placeholder {
 
 <div id="novel-container">
     <h1 id="novel-title">MYTHOS</h1>
+    <div id="chapter-label"></div>
     <div id="novel-text"></div>
 </div>
 
@@ -629,6 +384,12 @@ textarea.modal-input::placeholder {
     <div class="trigger-dot" id="dot-system"></div>
     <div class="trigger-dot" id="dot-style"></div>
     <div class="trigger-dot" id="dot-versions"></div>
+</div>
+
+<div id="chapter-nav">
+    <span id="chap-prev">‹</span>
+    <span id="chap-indicator"></span>
+    <span id="chap-next">›</span>
 </div>
 
 <div id="modal-overlay">
@@ -640,7 +401,8 @@ textarea.modal-input::placeholder {
         <div id="version-list"></div>
         <div id="modal-buttons">
             <button class="btn btn-cancel" id="btn-cancel">取消</button>
-            <button class="btn btn-confirm" id="btn-confirm" style="display:none">确认</button>
+            <button class="btn btn-secondary" id="btn-rewrite" style="display:none">改写本章</button>
+            <button class="btn btn-confirm" id="btn-confirm" style="display:none">续写新章</button>
         </div>
     </div>
 </div>
@@ -648,13 +410,11 @@ textarea.modal-input::placeholder {
 <div id="loading"><span>正在续写...</span></div>
 <div id="toast"></div>
 
-<!-- Selection action buttons (delete + comment) -->
 <div id="selection-actions">
     <div class="sel-btn delete-btn" id="delete-btn">删除</div>
     <div class="sel-btn" id="comment-btn">评论</div>
 </div>
 
-<!-- Delete confirm popup -->
 <div id="delete-confirm">
     <p>确定删除选中的文字吗？</p>
     <div class="confirm-btns">
@@ -663,7 +423,6 @@ textarea.modal-input::placeholder {
     </div>
 </div>
 
-<!-- Comment create popup -->
 <div id="comment-create-popup">
     <textarea id="comment-create-input" placeholder="写下你的评论..."></textarea>
     <div class="popup-actions">
@@ -672,7 +431,6 @@ textarea.modal-input::placeholder {
     </div>
 </div>
 
-<!-- Comment view/edit/delete popup -->
 <div id="comment-view-popup">
     <div class="comment-snippet" id="comment-view-snippet"></div>
     <div class="comment-text" id="comment-view-text"></div>
@@ -688,8 +446,22 @@ textarea.modal-input::placeholder {
 </div>
 
 <script>
+// --- State ---
+let currentChapter = 0;
+let totalChapters = 0;
+let isGenerating = false;
+let currentModalMode = null;
+let selectedText = '';
+let allComments = [];
+let currentViewComment = null;
+
+// --- DOM ---
 const novelContainer = document.getElementById('novel-container');
 const novelText = document.getElementById('novel-text');
+const chapterLabel = document.getElementById('chapter-label');
+const chapPrev = document.getElementById('chap-prev');
+const chapNext = document.getElementById('chap-next');
+const chapIndicator = document.getElementById('chap-indicator');
 const dotContinue = document.getElementById('dot-continue');
 const dotSystem = document.getElementById('dot-system');
 const dotStyle = document.getElementById('dot-style');
@@ -701,19 +473,16 @@ const systemPromptInput = document.getElementById('system-prompt-input');
 const stylePromptInput = document.getElementById('style-prompt-input');
 const versionList = document.getElementById('version-list');
 const btnCancel = document.getElementById('btn-cancel');
+const btnRewrite = document.getElementById('btn-rewrite');
 const btnConfirm = document.getElementById('btn-confirm');
 const loading = document.getElementById('loading');
 const toast = document.getElementById('toast');
-
-// Selection actions
 const selectionActions = document.getElementById('selection-actions');
 const deleteBtn = document.getElementById('delete-btn');
 const commentBtn = document.getElementById('comment-btn');
 const deleteConfirm = document.getElementById('delete-confirm');
 const delCancel = document.getElementById('del-cancel');
 const delConfirmBtn = document.getElementById('del-confirm');
-
-// Comment popups
 const commentCreatePopup = document.getElementById('comment-create-popup');
 const commentCreateInput = document.getElementById('comment-create-input');
 const commentCreateCancel = document.getElementById('comment-create-cancel');
@@ -729,18 +498,8 @@ const commentViewDeleteBtn = document.getElementById('comment-view-delete-btn');
 const commentEditCancel = document.getElementById('comment-edit-cancel');
 const commentEditSave = document.getElementById('comment-edit-save');
 
-let isGenerating = false;
-let previousLength = 0;
-let currentModalMode = null;
-let selectedText = '';
-let allComments = [];
-let currentViewComment = null;
-
 // --- Utility ---
-
-function escapeHtml(text) {
-    return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
+function escapeHtml(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 function showToast(msg) {
     toast.textContent = msg;
@@ -748,276 +507,182 @@ function showToast(msg) {
     setTimeout(() => toast.classList.remove('active'), 2000);
 }
 
-function scrollToBottom() {
-    novelContainer.scrollTop = novelContainer.scrollHeight;
+function scrollToBottom() { novelContainer.scrollTop = novelContainer.scrollHeight; }
+
+// --- Chapter navigation ---
+function updateChapterNav() {
+    if (totalChapters <= 1) {
+        document.getElementById('chapter-nav').style.display = 'none';
+    } else {
+        document.getElementById('chapter-nav').style.display = 'flex';
+        chapIndicator.textContent = `${currentChapter} / ${totalChapters}`;
+        chapPrev.style.visibility = currentChapter > 1 ? 'visible' : 'hidden';
+        chapNext.style.visibility = currentChapter < totalChapters ? 'visible' : 'hidden';
+    }
+    const cn = ['零','一','二','三','四','五','六','七','八','九','十'];
+    chapterLabel.textContent = currentChapter > 0 ? `第${cn[currentChapter] || currentChapter}章` : '';
 }
 
-// --- Novel rendering with comment dots ---
+chapPrev.addEventListener('click', () => { if (currentChapter > 1) { currentChapter--; loadCurrentChapter(); } });
+chapNext.addEventListener('click', () => { if (currentChapter < totalChapters) { currentChapter++; loadCurrentChapter(); } });
 
+// --- Render with comment dots ---
 function renderNovel(text) {
-    if (!allComments || allComments.length === 0) {
-        novelText.textContent = text;
-        return;
-    }
-
-    // Find positions of commented text in the novel
+    if (!allComments || allComments.length === 0) { novelText.textContent = text; return; }
     const markers = [];
     for (const c of allComments) {
         const idx = text.indexOf(c.text);
-        if (idx !== -1) {
-            markers.push({ id: c.id, start: idx, end: idx + c.text.length });
-        }
+        if (idx !== -1) markers.push({ id: c.id, start: idx, end: idx + c.text.length });
     }
-
-    // Sort by position ascending, skip overlapping
     markers.sort((a, b) => a.start - b.start);
-    const nonOverlapping = [];
+    const nonOverlap = [];
     let lastEnd = -1;
-    for (const m of markers) {
-        if (m.start >= lastEnd) {
-            nonOverlapping.push(m);
-            lastEnd = m.end;
-        }
-    }
-
-    // Build HTML with comment dots
-    let html = '';
-    let pos = 0;
-    for (const m of nonOverlapping) {
-        if (m.start > pos) {
-            html += escapeHtml(text.substring(pos, m.start));
-        }
+    for (const m of markers) { if (m.start >= lastEnd) { nonOverlap.push(m); lastEnd = m.end; } }
+    let html = '', pos = 0;
+    for (const m of nonOverlap) {
+        if (m.start > pos) html += escapeHtml(text.substring(pos, m.start));
         html += escapeHtml(text.substring(m.start, m.end));
         html += `<span class="comment-dot" data-comment-id="${m.id}"></span>`;
         pos = m.end;
     }
     html += escapeHtml(text.substring(pos));
-
     novelText.innerHTML = html;
-
-    // Add click handlers to dots
     novelText.querySelectorAll('.comment-dot').forEach(dot => {
-        dot.addEventListener('click', (e) => {
+        dot.addEventListener('click', e => {
             e.stopPropagation();
-            const commentId = dot.dataset.commentId;
-            const comment = allComments.find(c => c.id === commentId);
-            if (comment) showCommentView(dot, comment);
+            const c = allComments.find(c => c.id === dot.dataset.commentId);
+            if (c) showCommentView(dot, c);
         });
     });
 }
 
-// --- API calls ---
-
-async function loadNovel() {
+// --- API ---
+async function loadChaptersList() {
     try {
-        const resp = await fetch('/api/novel');
-        const text = await resp.text();
-        renderNovel(text);
-        return text.length;
-    } catch (e) { return 0; }
-}
-
-async function loadComments() {
-    try {
-        const resp = await fetch('/api/comments');
+        const resp = await fetch('/api/chapters');
         const data = await resp.json();
-        allComments = data.comments || [];
-    } catch (e) { allComments = []; }
+        totalChapters = (data.chapters || []).length;
+    } catch (e) { totalChapters = 0; }
 }
 
-async function loadSystemPrompt() {
+async function loadCurrentChapter() {
+    if (currentChapter < 1) return;
     try {
-        const resp = await fetch('/api/system-prompt');
-        return await resp.text();
-    } catch (e) { return ''; }
+        const [textResp, commResp] = await Promise.all([
+            fetch(`/api/chapter/${currentChapter}`),
+            fetch(`/api/chapter/${currentChapter}/comments`)
+        ]);
+        const text = await textResp.text();
+        const commData = await commResp.json();
+        allComments = commData.comments || [];
+        renderNovel(text);
+        updateChapterNav();
+    } catch (e) { novelText.textContent = ''; }
 }
 
-async function loadStylePrompt() {
-    try {
-        const resp = await fetch('/api/style-prompt');
-        return await resp.text();
-    } catch (e) { return ''; }
-}
-
-async function continueNovel(userPrompt) {
+async function continueNovel(userPrompt, mode) {
     if (isGenerating) return;
     isGenerating = true;
-    btnConfirm.disabled = true;
     loading.classList.add('active');
-
     try {
-        const resp = await fetch('/api/continue', {
+        const resp = await fetch('/api/chapter/continue', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userPrompt })
+            body: JSON.stringify({ userPrompt, mode, chapterNum: currentChapter })
         });
-
         const data = await resp.json();
-
         if (data.success) {
-            previousLength = novelText.textContent.length;
-            await loadNovel();
+            if (mode === 'new') {
+                totalChapters = data.chapter;
+                currentChapter = data.chapter;
+            }
+            await loadCurrentChapter();
             scrollToBottom();
         } else {
-            alert('续写失败: ' + (data.error || '未知错误'));
+            alert('失败: ' + (data.error || '未知错误'));
         }
-    } catch (e) {
-        alert('请求失败: ' + e.message);
-    } finally {
-        isGenerating = false;
-        btnConfirm.disabled = false;
-        loading.classList.remove('active');
-    }
-}
-
-async function saveSystemPrompt(prompt) {
-    btnConfirm.disabled = true;
-    try {
-        const resp = await fetch('/api/system-prompt', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt })
-        });
-        const data = await resp.json();
-        if (data.success) showToast('系统提示词已保存');
-        else alert('保存失败: ' + (data.error || '未知错误'));
     } catch (e) { alert('请求失败: ' + e.message); }
-    finally { btnConfirm.disabled = false; }
-}
-
-async function saveStylePrompt(prompt) {
-    btnConfirm.disabled = true;
-    try {
-        const resp = await fetch('/api/style-prompt', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt })
-        });
-        const data = await resp.json();
-        if (data.success) showToast('风格提示词已保存');
-        else alert('保存失败: ' + (data.error || '未知错误'));
-    } catch (e) { alert('请求失败: ' + e.message); }
-    finally { btnConfirm.disabled = false; }
+    finally { isGenerating = false; loading.classList.remove('active'); }
 }
 
 async function deleteText(text) {
     try {
-        const resp = await fetch('/api/delete-text', {
+        const resp = await fetch(`/api/chapter/${currentChapter}/delete-text`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text })
         });
         const data = await resp.json();
-        if (data.success) {
-            await loadNovel();
-            showToast('已删除');
-        } else {
-            alert('删除失败: ' + (data.error || '未知错误'));
-        }
-    } catch (e) {
-        alert('请求失败: ' + e.message);
-    }
+        if (data.success) { await loadCurrentChapter(); showToast('已删除'); }
+        else alert('删除失败: ' + (data.error || ''));
+    } catch (e) { alert('请求失败'); }
 }
 
 async function createComment(text, comment) {
     try {
-        const resp = await fetch('/api/comment', {
+        const resp = await fetch(`/api/chapter/${currentChapter}/comment`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text, comment })
         });
         const data = await resp.json();
-        if (data.success) {
-            await loadComments();
-            await loadNovel();
-            showToast('评论已保存');
-        } else {
-            alert('保存失败: ' + (data.error || '未知错误'));
-        }
-    } catch (e) {
-        alert('请求失败: ' + e.message);
-    }
+        if (data.success) { await loadCurrentChapter(); showToast('评论已保存'); }
+        else alert('保存失败');
+    } catch (e) { alert('请求失败'); }
 }
 
 async function updateComment(id, comment) {
     try {
-        const resp = await fetch('/api/comment', {
+        const resp = await fetch(`/api/chapter/${currentChapter}/comment`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id, text: currentViewComment.text, comment })
         });
         const data = await resp.json();
-        if (data.success) {
-            await loadComments();
-            await loadNovel();
-            showToast('评论已更新');
-        } else {
-            alert('更新失败: ' + (data.error || '未知错误'));
-        }
-    } catch (e) {
-        alert('请求失败: ' + e.message);
-    }
+        if (data.success) { await loadCurrentChapter(); showToast('评论已更新'); }
+        else alert('更新失败');
+    } catch (e) { alert('请求失败'); }
 }
 
 async function deleteComment(id) {
     try {
-        const resp = await fetch('/api/comment/delete', {
+        const resp = await fetch(`/api/chapter/${currentChapter}/comment/delete`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id })
         });
         const data = await resp.json();
-        if (data.success) {
-            await loadComments();
-            await loadNovel();
-            showToast('评论已删除');
-        } else {
-            alert('删除失败: ' + (data.error || '未知错误'));
-        }
-    } catch (e) {
-        alert('请求失败: ' + e.message);
-    }
+        if (data.success) { await loadCurrentChapter(); showToast('评论已删除'); }
+        else alert('删除失败');
+    } catch (e) { alert('请求失败'); }
 }
 
-async function loadVersions() {
+async function loadChapterVersions() {
     try {
-        const resp = await fetch('/api/versions');
+        const resp = await fetch(`/api/chapter/${currentChapter}/versions`);
         const data = await resp.json();
         return data.versions || [];
     } catch (e) { return []; }
 }
 
-async function rollbackTo(version) {
+async function rollbackChapter(version) {
     if (!confirm(`回退到 ${version}？当前内容将被替换。`)) return;
     try {
-        const resp = await fetch('/api/rollback', {
+        const resp = await fetch(`/api/chapter/${currentChapter}/rollback`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ version })
         });
         const data = await resp.json();
-        if (data.success) {
-            await loadNovel();
-            closeModal();
-            showToast(`已回退到 ${version}`);
-        } else {
-            alert('回退失败: ' + (data.error || '未知错误'));
-        }
-    } catch (e) { alert('请求失败: ' + e.message); }
+        if (data.success) { await loadCurrentChapter(); closeModal(); showToast(`已回退到 ${version}`); }
+        else alert('回退失败');
+    } catch (e) { alert('请求失败'); }
 }
 
-function formatSize(bytes) {
-    if (bytes < 1024) return bytes + ' B';
-    return (bytes / 1024).toFixed(1) + ' KB';
-}
-
-function formatDate(dateStr) {
-    const d = new Date(dateStr);
-    return `${d.getMonth()+1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
-}
+function formatSize(b) { return b < 1024 ? b + ' B' : (b / 1024).toFixed(1) + ' KB'; }
+function formatDate(d) { const dt = new Date(d); return `${dt.getMonth()+1}/${dt.getDate()} ${dt.getHours()}:${String(dt.getMinutes()).padStart(2,'0')}`; }
 
 // --- Modal ---
-
 function openModal(mode) {
     currentModalMode = mode;
     promptInput.style.display = 'none';
@@ -1026,45 +691,40 @@ function openModal(mode) {
     versionList.classList.remove('active');
     versionList.innerHTML = '';
     btnConfirm.style.display = 'none';
+    btnRewrite.style.display = 'none';
 
     if (mode === 'continue') {
         modalTitle.textContent = '续写方向';
         promptInput.style.display = '';
         btnConfirm.style.display = '';
+        btnRewrite.style.display = '';
         promptInput.value = '';
         setTimeout(() => promptInput.focus(), 100);
     } else if (mode === 'system-prompt') {
         modalTitle.textContent = '系统提示词';
         systemPromptInput.style.display = '';
         btnConfirm.style.display = '';
-        loadSystemPrompt().then(text => {
-            systemPromptInput.value = text;
-            setTimeout(() => systemPromptInput.focus(), 100);
-        });
+        btnConfirm.textContent = '保存';
+        fetch('/api/system-prompt').then(r => r.text()).then(t => { systemPromptInput.value = t; setTimeout(() => systemPromptInput.focus(), 100); });
     } else if (mode === 'style-prompt') {
         modalTitle.textContent = '风格提示词';
         stylePromptInput.style.display = '';
         btnConfirm.style.display = '';
-        loadStylePrompt().then(text => {
-            stylePromptInput.value = text;
-            setTimeout(() => stylePromptInput.focus(), 100);
-        });
+        btnConfirm.textContent = '保存';
+        fetch('/api/style-prompt').then(r => r.text()).then(t => { stylePromptInput.value = t; setTimeout(() => stylePromptInput.focus(), 100); });
     } else if (mode === 'versions') {
-        modalTitle.textContent = '版本历史';
+        modalTitle.textContent = `第${currentChapter}章 · 版本历史`;
         versionList.classList.add('active');
-        loadVersions().then(versions => {
-            if (versions.length === 0) {
-                versionList.innerHTML = '<div id="version-empty">暂无版本记录</div>';
-                return;
-            }
+        loadChapterVersions().then(versions => {
+            if (versions.length === 0) { versionList.innerHTML = '<div id="version-empty">暂无版本记录</div>'; return; }
             versionList.innerHTML = versions.map(v => `
                 <div class="version-item" data-version="${v.id}">
-                    <span class="version-id ${v.id === 'vBACKUP' ? 'backup' : ''}">${v.id}</span>
+                    <span class="version-id">${v.id}</span>
                     <span class="version-meta">${formatSize(v.size)} · ${formatDate(v.mtime)}</span>
                 </div>
             `).join('');
             versionList.querySelectorAll('.version-item').forEach(item => {
-                item.addEventListener('click', () => rollbackTo(item.dataset.version));
+                item.addEventListener('click', () => rollbackChapter(item.dataset.version));
             });
         });
     }
@@ -1074,10 +734,10 @@ function openModal(mode) {
 function closeModal() {
     modalOverlay.classList.remove('active');
     currentModalMode = null;
+    btnConfirm.textContent = '续写新章';
 }
 
-// --- Selection actions (delete + comment) ---
-
+// --- Selection actions ---
 function hideSelectionUI() {
     selectionActions.classList.remove('active');
     deleteConfirm.style.display = 'none';
@@ -1086,13 +746,12 @@ function hideSelectionUI() {
 }
 
 function showSelectionActions(x, y) {
-    let btnX = x;
-    let btnY = y - 36;
-    if (btnX + 130 > window.innerWidth) btnX = window.innerWidth - 130;
-    if (btnX < 10) btnX = 10;
-    if (btnY < 10) btnY = y + 20;
-    selectionActions.style.left = btnX + 'px';
-    selectionActions.style.top = btnY + 'px';
+    let bx = x, by = y - 36;
+    if (bx + 130 > window.innerWidth) bx = window.innerWidth - 130;
+    if (bx < 10) bx = 10;
+    if (by < 10) by = y + 20;
+    selectionActions.style.left = bx + 'px';
+    selectionActions.style.top = by + 'px';
     selectionActions.classList.add('active');
 }
 
@@ -1100,123 +759,86 @@ novelContainer.addEventListener('mouseup', function(e) {
     setTimeout(() => {
         const sel = window.getSelection();
         const text = sel.toString().trim();
-        if (text && text.length > 0 && novelText.contains(sel.anchorNode)) {
+        if (text && novelText.contains(sel.anchorNode)) {
             selectedText = text;
-            const range = sel.getRangeAt(0);
-            const rect = range.getBoundingClientRect();
+            const rect = sel.getRangeAt(0).getBoundingClientRect();
             showSelectionActions(rect.right, rect.top);
-        } else {
-            if (!selectionActions.contains(e.target) && !deleteConfirm.contains(e.target) && !commentCreatePopup.contains(e.target)) {
-                hideSelectionUI();
-            }
+        } else if (!selectionActions.contains(e.target) && !deleteConfirm.contains(e.target) && !commentCreatePopup.contains(e.target)) {
+            hideSelectionUI();
         }
     }, 10);
 });
 
-novelContainer.addEventListener('touchend', function(e) {
+novelContainer.addEventListener('touchend', function() {
     setTimeout(() => {
         const sel = window.getSelection();
         const text = sel.toString().trim();
-        if (text && text.length > 0 && novelText.contains(sel.anchorNode)) {
+        if (text && novelText.contains(sel.anchorNode)) {
             selectedText = text;
-            const range = sel.getRangeAt(0);
-            const rect = range.getBoundingClientRect();
+            const rect = sel.getRangeAt(0).getBoundingClientRect();
             showSelectionActions(rect.right, rect.top);
         }
     }, 300);
 });
 
-// Delete flow
 deleteBtn.addEventListener('click', function(e) {
     e.stopPropagation();
     if (!selectedText) return;
-    const btnRect = selectionActions.getBoundingClientRect();
-    let popY = btnRect.top - 80;
-    if (popY < 10) popY = btnRect.bottom + 5;
-    deleteConfirm.style.left = btnRect.left + 'px';
-    deleteConfirm.style.top = popY + 'px';
+    const r = selectionActions.getBoundingClientRect();
+    let py = r.top - 80; if (py < 10) py = r.bottom + 5;
+    deleteConfirm.style.left = r.left + 'px'; deleteConfirm.style.top = py + 'px';
     deleteConfirm.style.display = 'block';
     selectionActions.classList.remove('active');
 });
 
-delCancel.addEventListener('click', function(e) {
-    e.stopPropagation();
-    hideSelectionUI();
-});
-
+delCancel.addEventListener('click', e => { e.stopPropagation(); hideSelectionUI(); });
 delConfirmBtn.addEventListener('click', async function(e) {
     e.stopPropagation();
     if (!selectedText) return;
-    const textToDelete = selectedText;
-    deleteConfirm.style.display = 'none';
+    const t = selectedText; deleteConfirm.style.display = 'none';
     window.getSelection().removeAllRanges();
-    await deleteText(textToDelete);
-    selectedText = '';
+    await deleteText(t); selectedText = '';
 });
 
-// Comment create flow
 commentBtn.addEventListener('click', function(e) {
     e.stopPropagation();
     if (!selectedText) return;
-    const btnRect = selectionActions.getBoundingClientRect();
-    let popY = btnRect.top - 140;
-    if (popY < 10) popY = btnRect.bottom + 5;
-    commentCreatePopup.style.left = btnRect.left + 'px';
-    commentCreatePopup.style.top = popY + 'px';
-    commentCreateInput.value = '';
-    commentCreatePopup.style.display = 'block';
+    const r = selectionActions.getBoundingClientRect();
+    let py = r.top - 140; if (py < 10) py = r.bottom + 5;
+    commentCreatePopup.style.left = r.left + 'px'; commentCreatePopup.style.top = py + 'px';
+    commentCreateInput.value = ''; commentCreatePopup.style.display = 'block';
     selectionActions.classList.remove('active');
     setTimeout(() => commentCreateInput.focus(), 100);
 });
 
-commentCreateCancel.addEventListener('click', function(e) {
-    e.stopPropagation();
-    hideSelectionUI();
-});
-
+commentCreateCancel.addEventListener('click', e => { e.stopPropagation(); hideSelectionUI(); });
 commentCreateSave.addEventListener('click', async function(e) {
     e.stopPropagation();
-    const comment = commentCreateInput.value.trim();
-    if (!comment || !selectedText) return;
+    const c = commentCreateInput.value.trim();
+    if (!c || !selectedText) return;
     commentCreatePopup.style.display = 'none';
     window.getSelection().removeAllRanges();
-    await createComment(selectedText, comment);
-    selectedText = '';
+    await createComment(selectedText, c); selectedText = '';
 });
-
-commentCreateInput.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        commentCreateSave.click();
-    }
-});
+commentCreateInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); commentCreateSave.click(); } });
 
 // --- Comment view/edit/delete ---
-
 function showCommentView(dotEl, comment) {
     currentViewComment = comment;
     commentViewSnippet.textContent = comment.text.length > 80 ? comment.text.substring(0, 80) + '...' : comment.text;
     commentViewText.textContent = comment.comment;
-    commentViewText.style.display = '';
-    commentViewEdit.style.display = 'none';
-    commentViewActions.style.display = '';
-    commentEditActions.style.display = 'none';
-
-    const rect = dotEl.getBoundingClientRect();
-    let popX = rect.left + 10;
-    let popY = rect.bottom + 5;
-    if (popX + 360 > window.innerWidth) popX = window.innerWidth - 370;
-    if (popX < 10) popX = 10;
-    if (popY + 200 > window.innerHeight) popY = rect.top - 200;
-    commentViewPopup.style.left = popX + 'px';
-    commentViewPopup.style.top = popY + 'px';
+    commentViewText.style.display = ''; commentViewEdit.style.display = 'none';
+    commentViewActions.style.display = ''; commentEditActions.style.display = 'none';
+    const r = dotEl.getBoundingClientRect();
+    let px = r.left + 10, py = r.bottom + 5;
+    if (px + 360 > window.innerWidth) px = window.innerWidth - 370;
+    if (px < 10) px = 10;
+    if (py + 200 > window.innerHeight) py = r.top - 200;
+    commentViewPopup.style.left = px + 'px'; commentViewPopup.style.top = py + 'px';
     commentViewPopup.style.display = 'block';
 }
 
-function hideCommentView() {
-    commentViewPopup.style.display = 'none';
-    currentViewComment = null;
-}
+function hideCommentView() { commentViewPopup.style.display = 'none'; currentViewComment = null; }
 
 commentViewEditBtn.addEventListener('click', function(e) {
     e.stopPropagation();
@@ -1238,75 +860,84 @@ commentViewDeleteBtn.addEventListener('click', async function(e) {
 
 commentEditCancel.addEventListener('click', function(e) {
     e.stopPropagation();
-    commentViewText.style.display = '';
-    commentViewEdit.style.display = 'none';
-    commentViewActions.style.display = '';
-    commentEditActions.style.display = 'none';
+    commentViewText.style.display = ''; commentViewEdit.style.display = 'none';
+    commentViewActions.style.display = ''; commentEditActions.style.display = 'none';
 });
 
 commentEditSave.addEventListener('click', async function(e) {
     e.stopPropagation();
     if (!currentViewComment) return;
-    const newComment = commentViewEdit.value.trim();
-    if (!newComment) return;
+    const nc = commentViewEdit.value.trim();
+    if (!nc) return;
     hideCommentView();
-    await updateComment(currentViewComment.id, newComment);
+    await updateComment(currentViewComment.id, nc);
 });
 
-commentViewEdit.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        commentEditSave.click();
-    }
-});
+commentViewEdit.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); commentEditSave.click(); } });
 
-// --- Global click handlers ---
-
+// --- Global click ---
 document.addEventListener('mousedown', function(e) {
-    if (!selectionActions.contains(e.target) && !deleteConfirm.contains(e.target) && !commentCreatePopup.contains(e.target)) {
-        hideSelectionUI();
-    }
-    if (!commentViewPopup.contains(e.target) && !e.target.classList.contains('comment-dot')) {
-        hideCommentView();
-    }
+    if (!selectionActions.contains(e.target) && !deleteConfirm.contains(e.target) && !commentCreatePopup.contains(e.target)) hideSelectionUI();
+    if (!commentViewPopup.contains(e.target) && !e.target.classList.contains('comment-dot')) hideCommentView();
 });
 
-// --- Dot and modal event listeners ---
-
+// --- Dot and modal events ---
 dotContinue.addEventListener('click', () => { if (!isGenerating) openModal('continue'); });
-dotSystem.addEventListener('click', () => { openModal('system-prompt'); });
-dotStyle.addEventListener('click', () => { openModal('style-prompt'); });
-dotVersions.addEventListener('click', () => { openModal('versions'); });
+dotSystem.addEventListener('click', () => openModal('system-prompt'));
+dotStyle.addEventListener('click', () => openModal('style-prompt'));
+dotVersions.addEventListener('click', () => openModal('versions'));
 
 btnCancel.addEventListener('click', closeModal);
-modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
+modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeModal(); });
 
 btnConfirm.addEventListener('click', () => {
     if (currentModalMode === 'continue') {
         const prompt = promptInput.value.trim();
         if (!prompt) return;
         closeModal();
-        continueNovel(prompt);
+        continueNovel(prompt, 'new');
     } else if (currentModalMode === 'system-prompt') {
-        const prompt = systemPromptInput.value.trim();
-        if (!prompt) return;
+        const p = systemPromptInput.value.trim();
+        if (!p) return;
         closeModal();
-        saveSystemPrompt(prompt);
+        fetch('/api/system-prompt', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: p }) })
+            .then(r => r.json()).then(d => { if (d.success) showToast('系统提示词已保存'); else alert('保存失败'); });
     } else if (currentModalMode === 'style-prompt') {
-        const prompt = stylePromptInput.value.trim();
+        const p = stylePromptInput.value.trim();
         closeModal();
-        saveStylePrompt(prompt);
+        fetch('/api/style-prompt', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: p }) })
+            .then(r => r.json()).then(d => { if (d.success) showToast('风格提示词已保存'); else alert('保存失败'); });
     }
 });
 
-promptInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); btnConfirm.click(); }
+btnRewrite.addEventListener('click', () => {
+    if (currentModalMode !== 'continue') return;
+    const prompt = promptInput.value.trim();
+    if (!prompt) return;
+    closeModal();
+    continueNovel(prompt, 'rewrite');
 });
 
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+promptInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); btnConfirm.click(); } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// --- Keyboard chapter nav ---
+document.addEventListener('keydown', e => {
+    if (modalOverlay.classList.contains('active') || isGenerating) return;
+    if (e.key === 'ArrowLeft' && currentChapter > 1) { currentChapter--; loadCurrentChapter(); }
+    if (e.key === 'ArrowRight' && currentChapter < totalChapters) { currentChapter++; loadCurrentChapter(); }
+});
 
 // --- Init ---
-loadComments().then(() => loadNovel()).then(() => scrollToBottom());
+(async function init() {
+    await loadChaptersList();
+    if (totalChapters > 0) {
+        currentChapter = totalChapters; // start at latest
+        await loadCurrentChapter();
+        scrollToBottom();
+    }
+    updateChapterNav();
+})();
 </script>
 </body>
 </html>
